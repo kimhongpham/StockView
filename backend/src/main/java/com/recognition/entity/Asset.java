@@ -12,7 +12,6 @@ import java.util.UUID;
 @Table(
         name = "assets",
         indexes = {
-                @Index(name = "idx_assets_type", columnList = "type"),
                 @Index(name = "idx_assets_symbol", columnList = "symbol"),
                 @Index(name = "idx_assets_is_active", columnList = "is_active")
         }
@@ -32,10 +31,6 @@ public class Asset {
   @Column(name = "name", nullable = false, unique = true, length = 100)
   private String name;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "type", nullable = false, length = 50)
-  private AssetType type;
-
   @Column(name = "symbol", nullable = false, unique = true, length = 20)
   private String symbol;
 
@@ -52,13 +47,4 @@ public class Asset {
   @UpdateTimestamp
   @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
   private OffsetDateTime updatedAt;
-
-  // Enum cho type để map với constraint trong SQL
-  public enum AssetType {
-    CRYPTO,
-    STOCK,
-    METAL,
-    FOREX,
-    COMMODITY
-  }
 }
