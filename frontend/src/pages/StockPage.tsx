@@ -55,3 +55,5 @@ export const StockPage: React.FC = () => {
     </div>
   );
 };
+
+export default StockPage;

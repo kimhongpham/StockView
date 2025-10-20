@@ -119,3 +119,5 @@ export const WalletPage: React.FC = () => {
     </div>
   );
 };
+
+export default WalletPage;

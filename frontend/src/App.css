@@ -194,6 +194,52 @@ body {
   color: white;
 }
 
+/* Google Login Button Styles */
+.google-login-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Responsive cho modal */
+.modal-content {
+  max-width: 400px;
+  width: 90%;
+}
+
+/* Divider style */
+.divider {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Google Login Button Styles */
+.btn-google {
+  transition: all 0.3s ease;
+}
+
+.btn-google:hover {
+  background-color: #357ae8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4285f4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* ===== MAIN CONTENT STYLES ===== */
 .main-content {
   flex: 1;

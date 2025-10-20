@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# =========================
+# Environment files (bảo mật)
+# =========================
+.env
+.env.*       # ignore tất cả .env.* trừ .env.example
+!.env.example

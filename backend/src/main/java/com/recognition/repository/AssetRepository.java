@@ -31,4 +31,5 @@ public interface AssetRepository extends JpaRepository<Asset, UUID>, JpaSpecific
 
     // Tìm asset active theo symbol
     Optional<Asset> findBySymbolAndIsActiveTrue(String symbol);
+
 }

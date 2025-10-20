@@ -3,23 +3,19 @@ package com.recognition.entity;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_users_username", columnList = "username"),
-    @Index(name = "idx_users_email", columnList = "email"),
-    @Index(name = "idx_users_is_active", columnList = "is_active")
+        @Index(name = "idx_users_username", columnList = "username"),
+        @Index(name = "idx_users_email", columnList = "email"),
+        @Index(name = "idx_users_is_active", columnList = "is_active"),
+        @Index(name = "idx_users_provider_id", columnList = "provider_id")
 })
 public class Users {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
   private UUID id;
 
@@ -29,7 +25,7 @@ public class Users {
   @Column(name = "email", nullable = false, length = 255, unique = true)
   private String email;
 
-  @Column(name = "password_hash", nullable = false, length = 255)
+  @Column(name = "password_hash", length = 255)
   private String passwordHash;
 
   @Column(name = "first_name", length = 100)
@@ -56,8 +52,21 @@ public class Users {
   @Column(name = "last_login")
   private OffsetDateTime lastLogin;
 
-  // Getters and setters
+  // ====== OAuth2-related fields ======
+  @Column(name = "provider", length = 50)
+  private String provider; // e.g., "google", "github", "local"
 
+  @Column(name = "provider_id", length = 255)
+  private String providerId; // ID from OAuth provider (Google sub, GitHub id)
+
+  // ====== Role / Permissions ======
+  @Column(name = "role", length = 50)
+  private String role = "user"; // Possible values: "admin", "user", etc.
+
+  @Column(name = "avatar_url", length = 255)
+  private String avatarUrl;
+
+  // ====== Getters and Setters ======
   public UUID getId() {
     return id;
   }
@@ -152,5 +161,38 @@ public class Users {
 
   public void setLastLogin(OffsetDateTime lastLogin) {
     this.lastLogin = lastLogin;
+  }
+
+  public String getProvider() {
+    return provider;
+  }
+
+  public void setProvider(String provider) {
+    this.provider = provider;
+  }
+
+  public String getProviderId() {
+    return providerId;
+  }
+
+  public void setProviderId(String providerId) {
+    this.providerId = providerId;
+  }
+
+  public String getRole() {
+    return role != null ? role : "USER";
+  }
+
+  public void setRole(String role) {
+    this.role = role;
+  }
+
+
+  public String getAvatarUrl() {
+    return avatarUrl;
+  }
+
+  public void setAvatarUrl(String avatarUrl) {
+    this.avatarUrl = avatarUrl;
   }
 }
