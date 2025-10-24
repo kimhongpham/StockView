@@ -48,14 +48,24 @@ public class MockDataLoader implements CommandLineRunner {
         System.out.println("🚀 Inserting mock data for development...");
 
         // ===== USERS =====
+        // --- ADMIN ---
         Users admin = new Users();
         admin.setUsername("admin");
         admin.setEmail("admin@example.com");
-        admin.setPasswordHash(passwordEncoder.encode("Admin@123"));
+        String adminPlain = "Admin@123";                       // mật khẩu plaintext cho dev
+        String adminHash = passwordEncoder.encode(adminPlain); // mã hóa bằng PasswordEncoder inject
+        admin.setPasswordHash(adminHash);
         admin.setFirstName("System");
         admin.setLastName("Admin");
         admin.setIsActive(true);
         admin.setIsVerified(true);
+
+        // In ra console chỉ cho admin (dev-only)
+        System.out.println("=== MOCK ADMIN CREATED (dev only) ===");
+        System.out.println("username : " + admin.getUsername());
+        System.out.println("password (plain): " + adminPlain);
+        System.out.println("password (hash) : " + adminHash);
+        System.out.println("=====================================");
 
         Users alice = new Users();
         alice.setUsername("alice");
