@@ -1,4 +1,4 @@
-package com.recognition.dto;
+package com.recognition.dto.request;
 
 import java.math.BigDecimal;
 import java.util.UUID;

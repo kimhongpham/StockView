@@ -1,12 +1,13 @@
-package com.recognition.security;
+package com.recognition.config;
 
 import com.recognition.repository.UserRepository;
+import com.recognition.security.JwtAuthenticationFilter;
+import com.recognition.security.JwtTokenProvider;
 import com.recognition.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

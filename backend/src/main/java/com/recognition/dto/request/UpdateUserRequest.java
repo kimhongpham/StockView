@@ -1,4 +1,4 @@
-package com.recognition.dto;
+package com.recognition.dto.request;
 
 import jakarta.validation.constraints.Size;
 

@@ -3,7 +3,7 @@ import { transactionData } from '../data/mockData';
 
 export const WalletPage: React.FC = () => {
   return (
-    <div className="page" id="wallet">
+    <div className="page active" id="wallet">
       <h1 className="page-title">Wallet</h1>
 
       {/* Wallet Stats */}
@@ -37,22 +37,24 @@ export const WalletPage: React.FC = () => {
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody>
-              {transactionData.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td>{transaction.id}</td>
-                  <td>{transaction.amount}</td>
-                  <td>{transaction.date}</td>
-                  <td className={transaction.status === 'Success' ? 'positive' : ''}>
-                    {transaction.status}
-                  </td>
-                  <td>
-                    <button className="btn btn-secondary" style={{ padding: '5px 10px' }}>
-                      Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
+            <tbody id="transactionTable">
+              {transactionData.map((transaction) => {
+                const statusClass = transaction.status === "Success" ? "positive" : "";
+                
+                return (
+                  <tr key={transaction.id}>
+                    <td>{transaction.id}</td>
+                    <td>{transaction.amount}</td>
+                    <td>{transaction.date}</td>
+                    <td className={statusClass}>{transaction.status}</td>
+                    <td>
+                      <button className="btn btn-secondary" style={{ padding: "5px 10px" }}>
+                        Download
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -93,7 +95,7 @@ export const WalletPage: React.FC = () => {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
             <div className="form-group">
               <label htmlFor="expiration">Expiration</label>
               <input type="text" id="expiration" placeholder="MM/YY" />
@@ -113,7 +115,7 @@ export const WalletPage: React.FC = () => {
             />
           </div>
 
-          <button className="btn btn-primary" style={{ width: '100%' }}>Save</button>
+          <button className="btn btn-primary" style={{ width: "100%" }}>Save</button>
         </div>
       </div>
     </div>

@@ -12,7 +12,6 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // Key cố định, đủ mạnh cho HS256 (32 bytes trở lên)
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     private final long expirationMs = 86400000; // 1 ngày

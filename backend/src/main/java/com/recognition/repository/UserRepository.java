@@ -12,12 +12,12 @@ import com.recognition.entity.Users;
 @Repository
 public interface UserRepository extends JpaRepository<Users, UUID> {
   Optional<Users> findByUsername(String username);
-
   Optional<Users> findByEmail(String email);
 
   boolean existsByUsername(String username);
+  boolean existsByEmail(String email);
 
   List<Users> findByFirstName(String firstName);
-
   List<Users> findByLastName(String lastName);
+
 }

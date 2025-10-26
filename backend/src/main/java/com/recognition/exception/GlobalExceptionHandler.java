@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -50,5 +52,15 @@ public class GlobalExceptionHandler {
         error.put("error", "Internal Server Error");
         error.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(InvalidSortPropertyException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidSortProperty(InvalidSortPropertyException ex) {
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("timestamp", Instant.now());
+        error.put("status", 400);
+        error.put("error", "Bad Request");
+        error.put("message", ex.getMessage());
+        return ResponseEntity.badRequest().body(error);
     }
 }

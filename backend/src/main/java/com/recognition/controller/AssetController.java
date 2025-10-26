@@ -1,5 +1,6 @@
 package com.recognition.controller;
 
+import com.recognition.entity.Asset;
 import com.recognition.entity.Price;
 import com.recognition.service.AssetService;
 import com.recognition.service.PriceService;
@@ -26,16 +27,23 @@ public class AssetController {
     private final AssetService assetService;
     private final PriceService priceService;
 
-    // ------------------------------
-    // MARKET DATA
-    // ------------------------------
-
     @GetMapping("/market/stocks")
     @Operation(summary = "Get market stocks", description = "Retrieve a list of top stocks from external API (Finnhub)")
     public ResponseEntity<List<Map<String, Object>>> getMarketStocks() {
         log.info("Fetching market stocks from external API (Finnhub)");
         List<Map<String, Object>> stocks = assetService.getMarketStocks();
         return ResponseEntity.ok(stocks);
+    }
+
+    @GetMapping("/market/stocks/new")
+    @Operation(
+            summary = "Fetch new market stocks",
+            description = "Fetch and store up to 10 new stocks from Finnhub that are not yet in the database"
+    )
+    public ResponseEntity<List<Map<String, Object>>> fetchNewMarketStocks() {
+        log.info("Fetching NEW market stocks (not existing in DB) from Finnhub...");
+        List<Map<String, Object>> newStocks = assetService.fetchNewMarketStocks(10);
+        return ResponseEntity.ok(newStocks);
     }
 
     @GetMapping("/{code}/details")
@@ -48,10 +56,6 @@ public class AssetController {
         return ResponseEntity.ok(details);
     }
 
-    // ------------------------------
-    // PRICE FETCH & SAVE
-    // ------------------------------
-
     @PostMapping("/prices/{assetId}/fetch")
     @Operation(summary = "Fetch and save latest price", description = "Fetch latest price from external API (Finnhub / Crypto) and save to DB")
     public ResponseEntity<Price> fetchAndSavePrice(
@@ -60,5 +64,12 @@ public class AssetController {
         log.info("Fetching and saving latest price for asset: {}", assetId);
         Price price = assetService.fetchAndSavePrice(assetId);
         return ResponseEntity.ok(price);
+    }
+
+    // Lấy tất cả cổ phiếu
+    @GetMapping
+    public ResponseEntity<List<Asset>> getAllAssets() {
+        List<Asset> assets = assetService.getAllAssets();
+        return ResponseEntity.ok(assets);
     }
 }

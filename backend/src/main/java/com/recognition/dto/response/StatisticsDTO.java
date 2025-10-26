@@ -1,4 +1,4 @@
-package com.recognition.dto;
+package com.recognition.dto.response;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

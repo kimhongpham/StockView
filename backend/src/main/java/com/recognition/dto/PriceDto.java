@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class PriceDto {
+  private UUID id;
   private UUID assetId;
   private BigDecimal price;
   private OffsetDateTime timestamp;
@@ -16,7 +17,14 @@ public class PriceDto {
   private BigDecimal marketCap;
   private String source;
 
-  // Getters & Setters
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public UUID getAssetId() {
     return assetId;
   }

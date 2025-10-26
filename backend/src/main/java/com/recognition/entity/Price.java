@@ -22,7 +22,6 @@ import java.util.UUID;
                 @Index(name = "idx_prices_timestamp", columnList = "timestamp"),
                 @Index(name = "idx_prices_asset_timestamp", columnList = "asset_id, timestamp"),
                 @Index(name = "idx_prices_created_at", columnList = "created_at")
-                // idx_prices_recent (partial index) => không map trong JPA, chỉ ở DB
         }
 )
 @Getter

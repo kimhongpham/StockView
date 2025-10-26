@@ -1,4 +1,4 @@
-package com.recognition.data;
+package com.recognition.seed;
 
 import com.recognition.entity.*;
 import com.recognition.repository.*;
@@ -41,11 +41,11 @@ public class MockDataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (userRepository.count() > 0) {
-            System.out.println("✅ Mock data already exists. Skipping...");
+            System.out.println("Mock data already exists. Skipping...");
             return;
         }
 
-        System.out.println("🚀 Inserting mock data for development...");
+        System.out.println("Inserting mock data for development...");
 
         // ===== USERS =====
         // --- ADMIN ---
@@ -181,6 +181,6 @@ public class MockDataLoader implements CommandLineRunner {
 
         alertLogRepository.saveAll(Arrays.asList(log1, log2));
 
-        System.out.println("✅ Mock data inserted successfully!");
+        System.out.println("Mock data inserted successfully!");
     }
 }

@@ -1,10 +1,15 @@
 package com.recognition.controller;
 
 import com.recognition.dto.PriceDto;
+import com.recognition.dto.CandleDTO;
+import com.recognition.dto.response.StatisticsDTO;
+import com.recognition.dto.response.PriceResponse;
 import com.recognition.entity.Price;
+import com.recognition.exception.InvalidSortPropertyException;
 import com.recognition.service.PriceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,27 +21,28 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/prices")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Prices", description = "Price management and market data")
+@Tag(name = "Prices", description = "Price management, chart, and statistics")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class PriceController {
 
     private final PriceService priceService;
 
-    // ✅ UC1: Xem giá thị trường (lấy giá mới nhất)
     @GetMapping("/{assetId}/latest")
     public ResponseEntity<PriceDto> getLatestPrice(@PathVariable UUID assetId) {
         log.info("Fetching latest price for asset: {}", assetId);
@@ -44,7 +50,6 @@ public class PriceController {
         return ResponseEntity.ok(latestPrice);
     }
 
-    // ✅ UC1: Tính phần trăm thay đổi giá
     @GetMapping("/{assetId}/change")
     @Operation(summary = "Calculate price change", description = "Calculate the percentage change of price in a time range (hours)")
     public ResponseEntity<BigDecimal> getPriceChange(
@@ -56,37 +61,91 @@ public class PriceController {
         return ResponseEntity.ok(change);
     }
 
-    // ✅ Lịch sử giá (phân trang) - nhận LocalDate dễ dùng
+    @Operation(
+            summary = "Get paginated price history",
+            description = "Retrieve paginated price history for a specific asset within a date range, sorted by a valid field."
+    )
     @GetMapping("/{assetId}/history/paged")
-    public ResponseEntity<Page<PriceDto>> getPriceHistoryPaged(
+    public ResponseEntity<Page<PriceResponse>> getPriceHistoryPaged(
             @PathVariable UUID assetId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @PageableDefault(sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        OffsetDateTime start = startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime() : null;
-        OffsetDateTime end = endDate != null ? endDate.atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC) : null;
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDate,
 
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate endDate,
+
+            @Parameter(
+                    description = "Sorting field and direction (allowed: timestamp, price, volume, high24h, low24h, marketCap)",
+                    example = "timestamp,desc",
+                    schema = @Schema(allowableValues = {
+                            "timestamp,asc", "timestamp,desc",
+                            "price,asc", "price,desc",
+                            "volume,asc", "volume,desc",
+                            "high24h,asc", "high24h,desc",
+                            "low24h,asc", "low24h,desc",
+                            "marketCap,asc", "marketCap,desc"
+                    })
+            )
+            @PageableDefault(sort = "timestamp", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        // Danh sách các field được phép sort
+        List<String> validSorts = List.of("timestamp", "price", "volume", "high24h", "low24h", "marketCap");
+
+        // Kiểm tra xem người dùng có nhập sai field không
+        for (Sort.Order order : pageable.getSort()) {
+            if (!validSorts.contains(order.getProperty())) {
+                throw new InvalidSortPropertyException(order.getProperty());
+            }
+        }
+
+        // Chuyển đổi LocalDate → OffsetDateTime (UTC)
+        OffsetDateTime start = startDate != null
+                ? startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime()
+                : null;
+        OffsetDateTime end = endDate != null
+                ? endDate.atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC)
+                : null;
+
+        // Lấy dữ liệu phân trang
         Page<PriceDto> page = priceService.getPriceHistoryPaged(assetId, start, end, pageable);
-        return ResponseEntity.ok(page);
+
+        // Map sang PriceResponse
+        return ResponseEntity.ok(page.map(this::mapToResponse));
     }
 
-    // ✅ Lịch sử giá (danh sách, vẫn dùng Page để giới hạn số bản ghi)
-    @GetMapping("/{assetId}/history/list")
-    public ResponseEntity<Page<PriceDto>> getPriceHistoryList(
-            @PathVariable UUID assetId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @PageableDefault(sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
-
-        OffsetDateTime start = startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime() : null;
-        OffsetDateTime end = endDate != null ? endDate.atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC) : null;
-
-        Page<PriceDto> prices = priceService.getPriceHistoryPaged(assetId, start, end, pageable);
-        return ResponseEntity.ok(prices);
+    private PriceResponse mapToResponse(PriceDto dto) {
+        PriceResponse response = new PriceResponse();
+        response.setAssetId(dto.getAssetId());
+        response.setPrice(dto.getPrice());
+        response.setTimestamp(dto.getTimestamp());
+        response.setVolume(dto.getVolume());
+        response.setChangePercent(dto.getChangePercent());
+        response.setHigh24h(dto.getHigh24h());
+        response.setLow24h(dto.getLow24h());
+        response.setMarketCap(dto.getMarketCap());
+        response.setSource(dto.getSource());
+        return response;
     }
 
-    // ✅ UC15: Thêm giá mới
+    // Helper: check pageable.sort properties exist on entityClass
+    private List<String> findInvalidSortProperties(Sort sort, Class<?> entityClass) {
+        if (sort == null) return Collections.emptyList();
+        Set<String> fieldNames = Arrays.stream(entityClass.getDeclaredFields())
+                .map(Field::getName)
+                .collect(Collectors.toSet());
+
+        List<String> invalid = new ArrayList<>();
+        for (Sort.Order order : sort) {
+            String prop = order.getProperty();
+            if (!fieldNames.contains(prop)) {
+                invalid.add(prop);
+            }
+        }
+        return invalid;
+    }
+
     @PostMapping("/{assetId}")
     @Operation(summary = "Add new price", description = "Add a new price record for an asset")
     public ResponseEntity<Price> addPrice(
@@ -98,7 +157,6 @@ public class PriceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newPrice);
     }
 
-    // ✅ UC15: Lấy giá mới nhất từ API ngoài
     @PostMapping("/{assetId}/fetch")
     public ResponseEntity<PriceDto> fetchAndSavePrice(@PathVariable UUID assetId) {
         log.info("Fetching and saving latest price for asset: {}", assetId);
@@ -106,12 +164,37 @@ public class PriceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(fetchedPrice);
     }
 
-    // ✅ CRUD phụ: Xóa giá
-//    @DeleteMapping("/{id}")
-//    @Operation(summary = "Delete price", description = "Delete a price record by ID")
-//    public ResponseEntity<Void> deletePrice(@PathVariable UUID id) {
-//        log.info("Deleting price record with ID: {}", id);
-//        priceService.deletePrice(id);
-//        return ResponseEntity.noContent().build();
-//    }
+    @GetMapping("/{assetId}/chart")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getChart(
+            @PathVariable UUID assetId,
+            @RequestParam(defaultValue = "1d") String interval,
+            @RequestParam(defaultValue = "100") int limit
+    ) {
+        List<CandleDTO> data = priceService.getCandles(assetId, interval, limit);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Chart data fetched successfully",
+                "data", data
+        ));
+    }
+
+    @GetMapping("/{assetId}/stats")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getStats(
+            @PathVariable UUID assetId,
+            @RequestParam(defaultValue = "day") String range
+    ) {
+        StatisticsDTO stats = priceService.getStatistics(assetId, range);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Statistics calculated successfully",
+                "data", stats
+        ));
+    }
+
+    @PostMapping("/fetch-all")
+    public ResponseEntity<?> fetchAllPrices() {
+        return ResponseEntity.ok(priceService.fetchAndSaveAllPricesFromFinnhub());
+    }
 }

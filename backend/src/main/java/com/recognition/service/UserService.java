@@ -1,40 +1,28 @@
-//package com.recognition.service;
-//
-//import com.automarkettracker.backend.dto.UserDto;
-//import org.springframework.data.domain.Page;
-//import org.springframework.data.domain.Pageable;
-//
-//import java.util.UUID;
-//
-//public interface UserService {
-//
-//    /**
-//     * Tạo mới user.
-//     */
-//    UserDto createUser(UserDto userDto);
-//
-//    /**
-//     * Cập nhật thông tin user.
-//     */
-//    UserDto updateUser(UUID id, UserDto userDto);
-//
-//    /**
-//     * Xoá user theo ID.
-//     */
-//    void deleteUser(UUID id);
-//
-//    /**
-//     * Lấy chi tiết 1 user.
-//     */
-//    UserDto getUserById(UUID id);
-//
-//    /**
-//     * Tìm kiếm hoặc liệt kê tất cả user (có thể kèm filter).
-//     */
-//    Page<UserDto> searchUsers(String keyword, Pageable pageable);
-//
-//    /**
-//     * Kiểm tra username/email đã tồn tại.
-//     */
-//    boolean existsByUsername(String username);
-//}
+package com.recognition.service;
+
+import com.recognition.dto.request.UpdateUserRequest;
+import com.recognition.dto.UserDTO;
+import com.recognition.entity.Users;
+
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * User domain logic exposed by service layer.
+ */
+public interface UserService {
+
+    UserDTO toDto(Users user);
+
+    Users findByIdOrThrow(UUID id);
+
+    UserDTO getCurrentUser(UUID id);
+
+    UserDTO updateUser(UUID id, UpdateUserRequest request);
+
+    List<String> getWatchlist(UUID userId);
+
+    void addWatchlist(UUID userId, String symbol);
+
+    void removeWatchlist(UUID userId, String symbol);
+}

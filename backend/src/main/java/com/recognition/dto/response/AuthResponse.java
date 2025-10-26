@@ -1,4 +1,4 @@
-package com.recognition.dto;
+package com.recognition.dto.response;
 
 /**
  * Response containing JWT token and optionally user info.
