@@ -81,4 +81,30 @@ public interface PriceRepository extends JpaRepository<Price, UUID> {
 
     List<Price> findTop10ByAssetIdOrderByTimestampDesc(UUID assetId);
     List<Price> findTop5ByAssetIdAndSourceOrderByTimestampDesc(UUID assetId, String source);
+
+    @Query("""
+    SELECT p
+    FROM Price p
+    WHERE p.timestamp = (
+        SELECT MAX(p2.timestamp)
+        FROM Price p2
+        WHERE p2.asset.id = p.asset.id
+    )
+    AND p.changePercent IS NOT NULL
+    ORDER BY p.changePercent DESC
+    """)
+    List<Price> findTopGainers(Pageable pageable);
+
+    @Query("""
+    SELECT p
+    FROM Price p
+    WHERE p.timestamp = (
+        SELECT MAX(p2.timestamp)
+        FROM Price p2
+        WHERE p2.asset.id = p.asset.id
+    )
+    AND p.changePercent IS NOT NULL
+    ORDER BY p.changePercent ASC
+    """)
+    List<Price> findTopLosers(Pageable pageable);
 }

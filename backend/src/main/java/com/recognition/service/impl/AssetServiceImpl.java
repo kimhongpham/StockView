@@ -257,4 +257,36 @@ public class AssetServiceImpl implements AssetService {
     public List<Asset> getAllAssets() {
         return assetRepository.findAll();
     }
+
+    @Override
+    public Map<String, Object> getCompanyInfo(String symbol) {
+        log.info("Fetching company info for symbol: {}", symbol);
+
+        try {
+            String url = "https://finnhub.io/api/v1/stock/profile2?symbol=" + symbol + "&token=" + finnhubApiKey;
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+            if (response == null || response.isEmpty()) {
+                throw new ResourceNotFoundException("No company information found for symbol: " + symbol);
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("symbol", response.get("ticker"));
+            result.put("name", response.get("name"));
+            result.put("country", response.get("country"));
+            result.put("exchange", response.get("exchange"));
+            result.put("industry", response.get("finnhubIndustry"));
+            result.put("website", response.get("weburl"));
+            result.put("logo", response.get("logo"));
+            result.put("ipoDate", response.get("ipo"));
+            result.put("marketCapitalization", response.get("marketCapitalization"));
+            result.put("shareOutstanding", response.get("shareOutstanding"));
+
+            return result;
+
+        } catch (Exception e) {
+            log.error("Error fetching company info for {}: {}", symbol, e.getMessage());
+            throw new ResourceNotFoundException("Unable to fetch company info for symbol: " + symbol);
+        }
+    }
 }

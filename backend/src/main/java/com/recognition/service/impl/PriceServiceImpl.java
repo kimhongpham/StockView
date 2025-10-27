@@ -306,4 +306,22 @@ public class PriceServiceImpl implements PriceService {
                 "failed", failed
         );
     }
+
+    @Override
+    public List<PriceDto> getTopMovers(String type, int limit) {
+        Pageable pageable = Pageable.ofSize(limit);
+        List<Price> prices;
+
+        if ("gainers".equalsIgnoreCase(type)) {
+            prices = priceRepository.findTopGainers(pageable);
+        } else if ("losers".equalsIgnoreCase(type)) {
+            prices = priceRepository.findTopLosers(pageable);
+        } else {
+            throw new IllegalArgumentException("Invalid type: " + type + ". Use 'gainers' or 'losers'.");
+        }
+
+        return prices.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 }

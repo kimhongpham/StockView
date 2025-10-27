@@ -72,4 +72,15 @@ public class AssetController {
         List<Asset> assets = assetService.getAllAssets();
         return ResponseEntity.ok(assets);
     }
+
+    @GetMapping("/{symbol}/company")
+    @Operation(summary = "Get company information", description = "Retrieve company profile information for a given asset symbol (via Finnhub API)")
+    public ResponseEntity<Map<String, Object>> getCompanyInfo(
+            @Parameter(description = "Stock symbol (e.g. AAPL, MSFT)")
+            @PathVariable String symbol) {
+
+        log.info("Fetching company info for symbol: {}", symbol);
+        Map<String, Object> companyInfo = assetService.getCompanyInfo(symbol);
+        return ResponseEntity.ok(companyInfo);
+    }
 }

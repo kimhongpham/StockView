@@ -197,4 +197,20 @@ public class PriceController {
     public ResponseEntity<?> fetchAllPrices() {
         return ResponseEntity.ok(priceService.fetchAndSaveAllPricesFromFinnhub());
     }
+
+    @GetMapping("/top")
+    @Operation(summary = "Get top gainers or losers",
+            description = "Return the top assets with highest or lowest price change percentage")
+    public ResponseEntity<?> getTopMovers(
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(defaultValue = "gainers") String type
+    ) {
+        List<PriceDto> result = priceService.getTopMovers(type, limit);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "type", type,
+                "count", result.size(),
+                "data", result
+        ));
+    }
 }

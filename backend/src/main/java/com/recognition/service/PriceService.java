@@ -40,6 +40,7 @@ public interface PriceService {
     Price addPriceEntity(UUID assetId, Price price);
 
     List<Price> findPriceHistoryListEntity(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate);
+    List<PriceDto> getTopMovers(String type, int limit);
 
     Page<PriceDto> getPriceHistoryPaged(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable);
 

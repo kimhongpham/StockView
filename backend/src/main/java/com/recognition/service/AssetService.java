@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface AssetService {
 
     Map<String, Object> getAssetDetails(String code);
+    Map<String, Object> getCompanyInfo(String symbol);
 
     Price fetchAndSavePrice(UUID assetId);
 
@@ -18,8 +19,6 @@ public interface AssetService {
     void deleteAsset(UUID assetId);
 
     List<Map<String, Object>> getMarketStocks();
-
     List<Map<String, Object>> fetchNewMarketStocks(int limit);
-
     List<Asset> getAllAssets();
 }
