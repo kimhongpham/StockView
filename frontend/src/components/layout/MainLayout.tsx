@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Sidebar } from './Sidebar';
-import { Header } from './Header';
-import { useAuthStore } from '../../store/authStore';
+import React, { useState, useEffect, useRef } from 'react'
+import { Sidebar } from './Sidebar'
+import { Header } from './Header'
+import { useAuthStore } from '../../store/authStore'
+import { useUIStore } from '../../store/uiStore'
 
 interface MainLayoutProps {
-  children: React.ReactNode;
-  activePage: string;
-  onPageChange: (page: string) => void;
-  onLoginClick: () => void;
-  onLogout?: () => void;
+  children: React.ReactNode
+  activePage: string
+  onPageChange: (page: string) => void
+  onLoginClick: () => void
+  onLogout?: () => void
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -18,58 +19,57 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onLoginClick,
   onLogout,
 }) => {
-  const [sidebarActive, setSidebarActive] = useState(false);
-  const { isLoggedIn } = useAuthStore();
+  const [sidebarActive, setSidebarActive] = useState(false)
+  const { isLoggedIn } = useAuthStore()
+  const { isDarkMode } = useUIStore()
+  const sidebarRef = useRef<HTMLDivElement>(null)
 
-  // Close sidebar when clicking outside on mobile
+  // Close sidebar when clicking outside (mobile)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.querySelector('.sidebar');
-      const menuToggle = document.querySelector('.menu-toggle');
-      
-      if (window.innerWidth <= 1024 && 
-          sidebar && 
-          !sidebar.contains(event.target as Node) && 
-          menuToggle && 
-          !menuToggle.contains(event.target as Node) && 
-          sidebarActive) {
-        setSidebarActive(false);
+      if (
+        window.innerWidth <= 1024 &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node) &&
+        sidebarActive
+      ) {
+        setSidebarActive(false)
       }
-    };
+    }
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [sidebarActive]);
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [sidebarActive])
 
-  const handleMenuToggle = () => {
-    setSidebarActive(!sidebarActive);
-  };
+  // Sync dark mode with body
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', isDarkMode)
+  }, [isDarkMode])
+
+  const handleMenuToggle = () => setSidebarActive(!sidebarActive)
 
   const handlePageChange = (page: string) => {
-    onPageChange(page);
-    if (window.innerWidth <= 1024) {
-      setSidebarActive(false);
-    }
-  };
+    onPageChange(page)
+    if (window.innerWidth <= 1024) setSidebarActive(false)
+  }
 
   return (
-    <div className="container">
-      <Sidebar 
-        activePage={activePage} 
+    <div className={`main-layout ${isDarkMode ? 'dark' : ''}`}>
+      <Sidebar
+        ref={sidebarRef}
+        activePage={activePage}
         onPageChange={handlePageChange}
         isLoggedIn={isLoggedIn}
         isActive={sidebarActive}
       />
-      <Header 
+      <Header
         onLoginClick={onLoginClick}
         onMenuToggle={handleMenuToggle}
         onLogout={onLogout}
       />
-      <main className="main-content">
-        {children}
-      </main>
+      <main className="main-content">{children}</main>
     </div>
-  );
-};
+  )
+}
 
-export default MainLayout;
+export default MainLayout

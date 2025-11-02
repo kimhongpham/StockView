@@ -21,7 +21,8 @@ import java.util.UUID;
                 @Index(name = "idx_prices_asset_id", columnList = "asset_id"),
                 @Index(name = "idx_prices_timestamp", columnList = "timestamp"),
                 @Index(name = "idx_prices_asset_timestamp", columnList = "asset_id, timestamp"),
-                @Index(name = "idx_prices_created_at", columnList = "created_at")
+                @Index(name = "idx_prices_created_at", columnList = "created_at"),
+                @Index(name = "idx_prices_asset_created_desc", columnList = "asset_id, created_at DESC")
         }
 )
 @Getter
@@ -32,8 +33,8 @@ import java.util.UUID;
 public class Price {
 
   @Id
-  @GeneratedValue
-  @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(updatable = false, nullable = false)
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -55,6 +56,12 @@ public class Price {
 
   @Column(name = "change_percent", precision = 10, scale = 4)
   private BigDecimal changePercent;
+
+  @Column(name = "pe_ratio", precision = 10, scale = 4)
+  private BigDecimal peRatio;
+
+  @Column(name = "pb_ratio", precision = 10, scale = 4)
+  private BigDecimal pbRatio;
 
   @Column(name = "high_24h", precision = 18, scale = 8)
   private BigDecimal high24h;

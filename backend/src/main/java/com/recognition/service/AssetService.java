@@ -9,16 +9,21 @@ import java.util.UUID;
 
 public interface AssetService {
 
-    Map<String, Object> getAssetDetails(String code);
-    Map<String, Object> getCompanyInfo(String symbol);
+    // 🔹 Lấy toàn bộ tài sản trong DB
+    List<Asset> getAllAssets();
 
+    // 🔹 Gộp getAssetDetails + getCompanyInfo
+    Map<String, Object> getAssetOverview(String code);
+
+    // 🔹 Lấy danh sách cổ phiếu mới (chưa có trong DB)
+    List<Map<String, Object>> fetchNewMarketStocks(int limit);
+
+    // 🔹 Lấy và lưu giá mới nhất cho asset
     Price fetchAndSavePrice(UUID assetId);
 
+    // 🔹 Kiểm tra symbol đã tồn tại chưa
     boolean existsBySymbol(String symbol);
 
+    // 🔹 Xóa asset + các giá liên quan
     void deleteAsset(UUID assetId);
-
-    List<Map<String, Object>> getMarketStocks();
-    List<Map<String, Object>> fetchNewMarketStocks(int limit);
-    List<Asset> getAllAssets();
 }

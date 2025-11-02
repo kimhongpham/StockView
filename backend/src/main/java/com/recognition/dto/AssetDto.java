@@ -1,6 +1,5 @@
 package com.recognition.dto;
 
-import com.recognition.entity.Asset;
 import java.util.UUID;
 
 public class AssetDto {

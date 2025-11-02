@@ -24,14 +24,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/prices")
@@ -50,29 +48,39 @@ public class PriceController {
         return ResponseEntity.ok(latestPrice);
     }
 
-    @GetMapping("/{assetId}/change")
-    @Operation(summary = "Calculate price change", description = "Calculate the percentage change of price in a time range (hours)")
-    public ResponseEntity<BigDecimal> getPriceChange(
+    @PostMapping("/{assetId}")
+    @Operation(summary = "Add new price", description = "Add a new price record for an asset")
+    public ResponseEntity<Price> addPrice(
             @Parameter(description = "Asset ID") @PathVariable UUID assetId,
-            @Parameter(description = "Time period in hours") @RequestParam(defaultValue = "24") int hours) {
+            @Valid @RequestBody Price price) {
 
-        log.info("Calculating price change for asset: {} over {} hours", assetId, hours);
-        BigDecimal change = priceService.calculatePriceChange(assetId, hours);
-        return ResponseEntity.ok(change);
+        log.info("Adding new price for asset: {} with value: {}", assetId, price.getPrice());
+        Price newPrice = priceService.addPriceEntity(assetId, price);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newPrice);
     }
 
-    @Operation(
-            summary = "Get paginated price history",
-            description = "Retrieve paginated price history for a specific asset within a date range, sorted by a valid field."
-    )
+    @PostMapping("/{assetId}/fetch")
+    public ResponseEntity<PriceDto> fetchAndSavePrice(@PathVariable UUID assetId) {
+        log.info("Fetching and saving latest price for asset: {}", assetId);
+        PriceDto fetchedPrice = priceService.fetchAndSavePrice(assetId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(fetchedPrice);
+    }
+
+    @PostMapping("/fetch-all")
+    public ResponseEntity<?> fetchAllPrices() {
+        return ResponseEntity.ok(priceService.fetchAndSaveAllPricesFromFinnhub());
+    }
+
     @GetMapping("/{assetId}/history/paged")
     public ResponseEntity<Page<PriceResponse>> getPriceHistoryPaged(
             @PathVariable UUID assetId,
 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate startDate,
 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate endDate,
 
             @Parameter(
@@ -102,7 +110,7 @@ public class PriceController {
 
         // Chuyển đổi LocalDate → OffsetDateTime (UTC)
         OffsetDateTime start = startDate != null
-                ? startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime()
+                ? startDate.atStartOfDay().atOffset(ZoneOffset.UTC)
                 : null;
         OffsetDateTime end = endDate != null
                 ? endDate.atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC)
@@ -113,55 +121,6 @@ public class PriceController {
 
         // Map sang PriceResponse
         return ResponseEntity.ok(page.map(this::mapToResponse));
-    }
-
-    private PriceResponse mapToResponse(PriceDto dto) {
-        PriceResponse response = new PriceResponse();
-        response.setAssetId(dto.getAssetId());
-        response.setPrice(dto.getPrice());
-        response.setTimestamp(dto.getTimestamp());
-        response.setVolume(dto.getVolume());
-        response.setChangePercent(dto.getChangePercent());
-        response.setHigh24h(dto.getHigh24h());
-        response.setLow24h(dto.getLow24h());
-        response.setMarketCap(dto.getMarketCap());
-        response.setSource(dto.getSource());
-        return response;
-    }
-
-    // Helper: check pageable.sort properties exist on entityClass
-    private List<String> findInvalidSortProperties(Sort sort, Class<?> entityClass) {
-        if (sort == null) return Collections.emptyList();
-        Set<String> fieldNames = Arrays.stream(entityClass.getDeclaredFields())
-                .map(Field::getName)
-                .collect(Collectors.toSet());
-
-        List<String> invalid = new ArrayList<>();
-        for (Sort.Order order : sort) {
-            String prop = order.getProperty();
-            if (!fieldNames.contains(prop)) {
-                invalid.add(prop);
-            }
-        }
-        return invalid;
-    }
-
-    @PostMapping("/{assetId}")
-    @Operation(summary = "Add new price", description = "Add a new price record for an asset")
-    public ResponseEntity<Price> addPrice(
-            @Parameter(description = "Asset ID") @PathVariable UUID assetId,
-            @Valid @RequestBody Price price) {
-
-        log.info("Adding new price for asset: {} with value: {}", assetId, price.getPrice());
-        Price newPrice = priceService.addPriceEntity(assetId, price);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newPrice);
-    }
-
-    @PostMapping("/{assetId}/fetch")
-    public ResponseEntity<PriceDto> fetchAndSavePrice(@PathVariable UUID assetId) {
-        log.info("Fetching and saving latest price for asset: {}", assetId);
-        PriceDto fetchedPrice = priceService.fetchAndSavePrice(assetId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(fetchedPrice);
     }
 
     @GetMapping("/{assetId}/chart")
@@ -179,6 +138,31 @@ public class PriceController {
         ));
     }
 
+    @GetMapping("/{assetId}/change")
+    @Operation(summary = "Calculate price change", description = "Calculate the percentage change of price in a time range (hours)")
+    public ResponseEntity<BigDecimal> getPriceChange(
+            @Parameter(description = "Asset ID") @PathVariable UUID assetId,
+            @Parameter(description = "Time period in hours") @RequestParam(defaultValue = "24") int hours) {
+
+        log.info("Calculating price change for asset: {} over {} hours", assetId, hours);
+        BigDecimal change = priceService.calculatePriceChange(assetId, hours);
+        return ResponseEntity.ok(change);
+    }
+
+    private PriceResponse mapToResponse(PriceDto dto) {
+        PriceResponse response = new PriceResponse();
+        response.setAssetId(dto.getAssetId());
+        response.setPrice(dto.getPrice());
+        response.setTimestamp(dto.getTimestamp());
+        response.setVolume(dto.getVolume());
+        response.setChangePercent(dto.getChangePercent());
+        response.setHigh24h(dto.getHigh24h());
+        response.setLow24h(dto.getLow24h());
+        response.setMarketCap(dto.getMarketCap());
+        response.setSource(dto.getSource());
+        return response;
+    }
+
     @GetMapping("/{assetId}/stats")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getStats(
@@ -191,11 +175,6 @@ public class PriceController {
                 "message", "Statistics calculated successfully",
                 "data", stats
         ));
-    }
-
-    @PostMapping("/fetch-all")
-    public ResponseEntity<?> fetchAllPrices() {
-        return ResponseEntity.ok(priceService.fetchAndSaveAllPricesFromFinnhub());
     }
 
     @GetMapping("/top")

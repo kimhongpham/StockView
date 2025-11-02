@@ -1,10 +1,8 @@
-// src/types/asset.ts
-
 export interface Asset {
   id: string;
   name: string;
   symbol: string;
-  type?: string; // STOCK, CRYPTO, METAL, ...
+  type?: string;
   description?: string;
   isActive?: boolean;
   createdAt?: string;
@@ -22,4 +20,13 @@ export interface PriceDto {
   low24h?: number;
   marketCap?: number;
   source?: string;
+}
+
+export interface ChartPoint {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
 }

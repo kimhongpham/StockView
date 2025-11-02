@@ -20,6 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'favorit', icon: 'fas fa-star', label: 'Đang Theo Dõi', premium: false },
     { id: 'wallet', icon: 'fas fa-wallet', label: 'Danh Mục Đầu Tư', premium: false },
     { id: 'profile', icon: 'fas fa-user', label: 'Hồ Sơ', premium: false },
+    { id: 'admin', icon: 'fas fa-cog', label: 'Quản Trị', premium: false },
   ];
 
   const handleItemClick = (pageId: string) => {
@@ -33,7 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <nav className={`sidebar ${isActive ? 'active' : ''}`} aria-label="Main navigation">
-      <div className="logo">FinanceView</div>
+      <div className="logo">StockView</div>
       <ul className="sidebar-menu">
         {filteredMenuItems.map((item) => (
           <li

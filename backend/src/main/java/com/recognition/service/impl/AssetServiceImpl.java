@@ -1,5 +1,6 @@
 package com.recognition.service.impl;
 
+import com.recognition.client.FinnhubClient;
 import com.recognition.entity.Asset;
 import com.recognition.entity.Price;
 import com.recognition.exception.ResourceNotFoundException;
@@ -8,11 +9,9 @@ import com.recognition.repository.PriceRepository;
 import com.recognition.service.AssetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,13 +27,15 @@ public class AssetServiceImpl implements AssetService {
 
     private final AssetRepository assetRepository;
     private final PriceRepository priceRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    @Value("${FINNHUB_API_KEY}")
-    private String finnhubApiKey;
+    private final FinnhubClient finnhubClient;
 
     @Override
-    public Map<String, Object> getAssetDetails(String code) {
+    public List<Asset> getAllAssets() {
+        return assetRepository.findAll();
+    }
+
+    @Override
+    public Map<String, Object> getAssetOverview(String code) {
         Asset asset;
         if (code.matches("^[0-9a-fA-F\\-]{36}$")) {
             asset = assetRepository.findById(UUID.fromString(code))
@@ -50,144 +51,72 @@ public class AssetServiceImpl implements AssetService {
         result.put("name", asset.getName());
         result.put("description", asset.getDescription());
 
+        // 🔹 Thêm thông tin công ty (nếu có)
         try {
-            String url = "https://finnhub.io/api/v1/quote?symbol=" + asset.getSymbol() + "&token=" + finnhubApiKey;
-            Map<String, Object> apiResponse = restTemplate.getForObject(url, Map.class);
+            Map<String, Object> company = finnhubClient.fetchCompanyProfile(asset.getSymbol());
+            if (company != null && !company.isEmpty()) {
+                result.put("country", company.get("country"));
+                result.put("exchange", company.get("exchange"));
+                result.put("industry", company.get("finnhubIndustry"));
+                result.put("website", company.get("weburl"));
+                result.put("logo", company.get("logo"));
+                result.put("ipoDate", company.get("ipo"));
+                result.put("marketCapitalization", company.get("marketCapitalization"));
+                result.put("shareOutstanding", company.get("shareOutstanding"));
+            }
+        } catch (Exception e) {
+            log.warn("Unable to fetch company info for {}: {}", asset.getSymbol(), e.getMessage());
+        }
 
-            if (apiResponse != null && !apiResponse.isEmpty() && ((Number) apiResponse.get("c")).doubleValue() != 0.0) {
+        // 🔹 Thêm thông tin giá
+        try {
+            BigDecimal price = finnhubClient.fetchPrice(asset.getSymbol());
+            if (price != null) {
                 result.put("source", "Finnhub");
-                result.put("currentPrice", apiResponse.get("c"));
-                result.put("high", apiResponse.get("h"));
-                result.put("low", apiResponse.get("l"));
-                result.put("open", apiResponse.get("o"));
-                result.put("previousClose", apiResponse.get("pc"));
-                result.put("timestamp",
-                        Instant.ofEpochSecond(((Number) apiResponse.get("t")).longValue()).toString());
+                result.put("currentPrice", price);
+                result.put("timestamp", OffsetDateTime.now().toString());
             } else {
-                log.warn("Finnhub returned empty or zero price for {}", asset.getSymbol());
                 populatePriceFromDB(asset, result);
             }
-
         } catch (Exception e) {
-            log.error("Error fetching asset details for {}: {}", asset.getSymbol(), e.getMessage());
+            log.error("Error fetching price for {}: {}", asset.getSymbol(), e.getMessage());
             populatePriceFromDB(asset, result);
+        }
+
+        // 🔹 Thêm chỉ số tài chính (P/E, P/B, ROE, Dividend Yield)
+        try {
+            Map<String, Object> metrics = finnhubClient.fetchStockMetric(asset.getSymbol());
+            if (metrics != null && !metrics.isEmpty()) {
+                result.put("peRatio", metrics.get("peBasicExclExtraTTM"));
+                result.put("pbRatio", metrics.get("pbAnnual"));
+                result.put("roe", metrics.get("roeTTM"));
+                result.put("dividendYield", metrics.get("dividendYieldIndicatedAnnual"));
+                result.put("ytdChangePercent", metrics.get("yearToDatePriceReturnDaily"));
+            }
+        } catch (Exception e) {
+            log.warn("Unable to fetch metrics for {}: {}", asset.getSymbol(), e.getMessage());
+        }
+
+// 🔹 Thêm khối lượng giao dịch hiện tại (volume)
+        try {
+            BigDecimal volume = finnhubClient.fetchQuoteVolume(asset.getSymbol());
+            if (volume != null) {
+                result.put("volume", volume);
+            }
+        } catch (Exception e) {
+            log.warn("Unable to fetch volume for {}: {}", asset.getSymbol(), e.getMessage());
         }
 
         return result;
     }
 
-    private void populatePriceFromDB(Asset asset, Map<String, Object> result) {
-        Price price = priceRepository.findTopByAssetOrderByTimestampDesc(asset)
-                .orElse(null);
-
-        if (price != null) {
-            result.put("source", "Database");
-            result.put("currentPrice", price.getPrice());
-            result.put("high", price.getHigh24h());
-            result.put("low", price.getLow24h());
-            result.put("timestamp", price.getTimestamp());
-        } else {
-            result.put("source", "None");
-            result.put("currentPrice", null);
-        }
-    }
-
-    @Override
-    @Transactional
-    public Price fetchAndSavePrice(UUID assetId) {
-        Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
-
-        BigDecimal priceValue;
-        String source;
-
-        try {
-            priceValue = fetchPriceFromFinnhub(asset.getSymbol());
-            source = "finnhub-api";
-        } catch (Exception e) {
-            Price lastPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset)
-                    .orElseThrow(() -> new ResourceNotFoundException("No price available for asset"));
-            priceValue = lastPrice.getPrice();
-            source = "mock-db";
-        }
-
-        Price price = new Price();
-        price.setAsset(asset);
-        price.setPrice(priceValue);
-        price.setTimestamp(OffsetDateTime.now());
-        price.setSource(source);
-        return priceRepository.save(price);
-    }
-
-    private BigDecimal fetchPriceFromFinnhub(String symbol) {
-        String url = "https://finnhub.io/api/v1/quote?symbol=" + symbol + "&token=" + finnhubApiKey;
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
-        if (response == null || response.isEmpty() || response.get("c") == null) {
-            throw new RuntimeException("Finnhub API returned no price for " + symbol);
-        }
-
-        return new BigDecimal(response.get("c").toString());
-    }
-
-    @Override
-    public boolean existsBySymbol(String symbol) {
-        return assetRepository.existsBySymbol(symbol);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAsset(UUID assetId) {
-        if (!assetRepository.existsById(assetId)) {
-            throw new ResourceNotFoundException("Asset not found with ID: " + assetId);
-        }
-        assetRepository.deleteById(assetId);
-    }
-
-    @Override
-    public List<Map<String, Object>> getMarketStocks() {
-        try {
-            String url = "https://finnhub.io/api/v1/stock/symbol?exchange=US&token=" + finnhubApiKey;
-            List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
-
-            if (response == null || response.isEmpty()) {
-                log.warn("⚠️ Finnhub returned empty stock list.");
-                return Collections.emptyList();
-            }
-
-            List<Map<String, Object>> topStocks = response.stream()
-                    .filter(stock -> stock.get("symbol") != null)
-                    .limit(10)
-                    .toList();
-
-            List<Map<String, Object>> result = new ArrayList<>();
-
-            for (Map<String, Object> stock : topStocks) {
-                String symbol = stock.get("symbol").toString();
-                try {
-                    enrichAndSaveStock(stock, symbol, result);
-                } catch (Exception ex) {
-                    log.warn("Error fetching quote for symbol {}: {}", symbol, ex.getMessage());
-                }
-            }
-
-            log.info("Successfully fetched and stored {} market stocks.", result.size());
-            return result;
-
-        } catch (Exception e) {
-            log.error("Error fetching market stocks: {}", e.getMessage(), e);
-            return Collections.emptyList();
-        }
-    }
-
     @Override
     @Transactional
     public List<Map<String, Object>> fetchNewMarketStocks(int limit) {
-        String url = "https://finnhub.io/api/v1/stock/symbol?exchange=US&token=" + finnhubApiKey;
-        List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
+        List<Map<String, Object>> response = finnhubClient.fetchMarketSymbols("US");
 
         if (response == null || response.isEmpty()) {
-            log.warn("⚠️ Finnhub returned empty stock list.");
+            log.warn("Finnhub returned empty stock list.");
             return Collections.emptyList();
         }
 
@@ -213,10 +142,17 @@ public class AssetServiceImpl implements AssetService {
     }
 
     private void enrichAndSaveStock(Map<String, Object> stock, String symbol, List<Map<String, Object>> result) {
-        String quoteUrl = String.format("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, finnhubApiKey);
-        Map<String, Object> quote = restTemplate.getForObject(quoteUrl, Map.class);
+        BigDecimal currentPrice = finnhubClient.fetchPrice(symbol);
+        if (currentPrice == null) {
+            log.warn("No valid price returned for {}", symbol);
+            return;
+        }
 
-        if (quote == null || quote.get("c") == null) return;
+        Map<String, Object> quote = new HashMap<>();
+        quote.put("c", currentPrice);
+        quote.put("h", currentPrice);
+        quote.put("l", currentPrice);
+        quote.put("t", Instant.now().getEpochSecond());
 
         Asset asset = assetRepository.findBySymbol(symbol)
                 .orElseGet(() -> assetRepository.save(
@@ -228,20 +164,35 @@ public class AssetServiceImpl implements AssetService {
                                 .build()
                 ));
 
+        // 🔹 Xử lý timestamp hợp lệ
+        long ts = ((Number) quote.get("t")).longValue();
+        if (ts == 0) {
+            log.warn("Skipping invalid timestamp (0) for {}", symbol);
+            return;
+        }
+
+        OffsetDateTime timestamp = OffsetDateTime.ofInstant(Instant.ofEpochSecond(ts), ZoneOffset.UTC);
+
+        // 🔹 Kiểm tra trùng khóa
+        Optional<Price> existing = priceRepository.findByAssetAndTimestampAndSource(asset, timestamp, "Finnhub");
+        if (existing.isPresent()) {
+            log.info("Price already exists for {} at {}, skipping.", symbol, timestamp);
+            return;
+        }
+
         Price price = Price.builder()
                 .asset(asset)
                 .price(new BigDecimal(quote.get("c").toString()))
                 .high24h(new BigDecimal(quote.get("h").toString()))
                 .low24h(new BigDecimal(quote.get("l").toString()))
-                .timestamp(OffsetDateTime.ofInstant(
-                        Instant.ofEpochSecond(((Number) quote.get("t")).longValue()), ZoneOffset.UTC))
+                .timestamp(timestamp)
                 .source("Finnhub")
                 .build();
 
         try {
             priceRepository.save(price);
         } catch (DataIntegrityViolationException ex) {
-            log.warn("⚠️ Duplicate price ignored for asset {} at {}", asset.getSymbol(), price.getTimestamp());
+            log.warn("Duplicate price ignored for asset {} at {}", asset.getSymbol(), price.getTimestamp());
         }
 
         Map<String, Object> enriched = new LinkedHashMap<>(stock);
@@ -254,39 +205,73 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public List<Asset> getAllAssets() {
-        return assetRepository.findAll();
+    @Transactional
+    public Price fetchAndSavePrice(UUID assetId) {
+        Asset asset = assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
+
+        BigDecimal priceValue;
+        String source;
+
+        try {
+            priceValue = finnhubClient.fetchPrice(asset.getSymbol());
+            source = "Finnhub";
+        } catch (Exception e) {
+            Price lastPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset)
+                    .orElseThrow(() -> new ResourceNotFoundException("No price available for asset"));
+            priceValue = lastPrice.getPrice();
+            source = "mock-db";
+        }
+
+        Price price = new Price();
+        price.setAsset(asset);
+        price.setPrice(priceValue);
+        price.setTimestamp(OffsetDateTime.now());
+        price.setSource(source);
+        return priceRepository.save(price);
     }
 
     @Override
-    public Map<String, Object> getCompanyInfo(String symbol) {
-        log.info("Fetching company info for symbol: {}", symbol);
+    public boolean existsBySymbol(String symbol) {
+        return assetRepository.existsBySymbol(symbol);
+    }
 
+    @Override
+    @Transactional
+    public void deleteAsset(UUID assetId) {
+        log.info("Attempting to delete asset with ID: {}", assetId);
         try {
-            String url = "https://finnhub.io/api/v1/stock/profile2?symbol=" + symbol + "&token=" + finnhubApiKey;
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
-            if (response == null || response.isEmpty()) {
-                throw new ResourceNotFoundException("No company information found for symbol: " + symbol);
+            if (!assetRepository.existsById(assetId)) {
+                log.warn("Asset not found: {}", assetId);
+                throw new ResourceNotFoundException("Asset not found with ID: " + assetId);
             }
 
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("symbol", response.get("ticker"));
-            result.put("name", response.get("name"));
-            result.put("country", response.get("country"));
-            result.put("exchange", response.get("exchange"));
-            result.put("industry", response.get("finnhubIndustry"));
-            result.put("website", response.get("weburl"));
-            result.put("logo", response.get("logo"));
-            result.put("ipoDate", response.get("ipo"));
-            result.put("marketCapitalization", response.get("marketCapitalization"));
-            result.put("shareOutstanding", response.get("shareOutstanding"));
+            priceRepository.deleteAllByAssetId(assetId);
+            log.info("Deleted all prices linked to asset {}", assetId);
 
-            return result;
+            assetRepository.deleteById(assetId);
+            log.info("Asset deleted successfully: {}", assetId);
 
+        } catch (DataIntegrityViolationException e) {
+            log.error("Constraint violation while deleting asset {}: {}", assetId, e.getMessage());
+            throw new RuntimeException("Cannot delete asset due to existing references (FK constraint)");
         } catch (Exception e) {
-            log.error("Error fetching company info for {}: {}", symbol, e.getMessage());
-            throw new ResourceNotFoundException("Unable to fetch company info for symbol: " + symbol);
+            log.error("Unexpected error while deleting asset {}: {}", assetId, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete asset: " + e.getMessage());
         }
+    }
+
+    /**
+     * Populate the latest price information from DB into the response map.
+     */
+    private void populatePriceFromDB(Asset asset, Map<String, Object> response) {
+        if (asset == null || response == null) return;
+
+        priceRepository.findTopByAssetIdOrderByTimestampDesc(asset.getId())
+                .ifPresent(latestPrice -> {
+                    response.put("source", "Database");
+                    response.put("currentPrice", latestPrice.getPrice());
+                    response.put("timestamp", latestPrice.getTimestamp().toString());
+                });
     }
 }

@@ -1,0 +1,62 @@
+/* ===== STOCK PAGE STYLES ===== */
+
+/* Stock Header */
+.stock-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* Stock Stats */
+
+/* Stock Actions */
+
+/* Stock Table */
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 800px;
+  position: relative;
+}
+
+.stock-table th {
+  background: linear-gradient(135deg, #fafafa 0%, #f3f4f6 100%);
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  color: #475569;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stock-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  transition: background-color 0.25s ease;
+  color: var(--text-color);
+}
+
+.stock-table tbody tr:hover {
+  background: rgba(248, 187, 208, 0.08);
+}
+
+/* Stock Changes */
+
+@media (max-width: 768px) {
+  
+  .stock-table {
+    font-size: 0.8rem;
+    min-width: 600px;
+  }
+  
+  .stock-table th,
+  .stock-table td {
+    padding: 12px 8px;
+  }
+}

@@ -12,17 +12,14 @@ import com.recognition.repository.PriceRepository;
 import com.recognition.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +38,6 @@ public class PriceServiceImpl implements PriceService {
     private final PriceRepository priceRepository;
     private final AssetRepository assetRepository;
     private final FinnhubClient finnhubClient;
-
-    @Value("${finnhub.api.key}")
-    private String finnhubApiKey;
-
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public Page<Price> getPriceHistory(UUID assetId, OffsetDateTime startDate,
@@ -111,17 +103,53 @@ public class PriceServiceImpl implements PriceService {
             priceValue = fetchPriceFromFinnhub(asset.getSymbol());
             source = "finnhub-api";
         } catch (Exception e) {
+            log.warn("Finnhub fetch failed for {} — using last known price", asset.getSymbol());
             Price lastPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset)
                     .orElseThrow(() -> new ResourceNotFoundException("No price for asset: " + asset.getSymbol()));
             priceValue = lastPrice.getPrice();
             source = lastPrice.getSource();
         }
 
-        Price price = new Price();
-        price.setAsset(asset);
-        price.setPrice(priceValue);
-        price.setTimestamp(OffsetDateTime.now());
-        price.setSource(source);
+        // 🔹 Lấy khối lượng giao dịch (volume)
+        BigDecimal volume = null;
+        try {
+            volume = finnhubClient.fetchQuoteVolume(asset.getSymbol());
+        } catch (Exception e) {
+            log.warn("Unable to fetch volume for {}: {}", asset.getSymbol(), e.getMessage());
+        }
+
+        // ✅ Convert BigDecimal → Long để phù hợp với entity
+        Long volumeValue = (volume != null) ? volume.longValue() : null;
+
+        // 🔹 Lấy giá trước đó
+        Price previousPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset).orElse(null);
+
+        BigDecimal changePercent = null;
+        if (previousPrice != null && previousPrice.getPrice() != null
+                && previousPrice.getPrice().compareTo(BigDecimal.ZERO) != 0
+                && priceValue != null) {
+            BigDecimal diff = priceValue.subtract(previousPrice.getPrice());
+            changePercent = diff
+                    .divide(previousPrice.getPrice(), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            log.info("Change for {}: {} -> {} = {}%", asset.getSymbol(), previousPrice.getPrice(), priceValue, changePercent);
+        }
+
+        // 🔹 Bỏ qua nếu giá trùng nhau (tránh spam record)
+        if (previousPrice != null && previousPrice.getPrice().compareTo(priceValue) == 0) {
+            log.info("⏸ No price change for {}, skipping insert.", asset.getSymbol());
+            return mapToDto(previousPrice);
+        }
+
+        // 🔹 Lưu bản ghi giá mới
+        Price price = Price.builder()
+                .asset(asset)
+                .price(priceValue)
+                .timestamp(OffsetDateTime.now())
+                .source(source)
+                .changePercent(changePercent)
+                .volume(volumeValue) // ✅ kiểu Long khớp với entity
+                .build();
 
         Price saved = priceRepository.save(price);
         return mapToDto(saved);
@@ -187,28 +215,37 @@ public class PriceServiceImpl implements PriceService {
         Asset asset = assetRepository.findById(assetId)
                 .orElseThrow(() -> new NoSuchElementException("Asset not found"));
 
-        var now = OffsetDateTime.now();
-        var start = switch (interval) {
-            case "1d", "day" -> now.minusDays(1);
-            case "1w", "week" -> now.minusWeeks(1);
-            case "1m", "month" -> now.minusMonths(1);
-            default -> throw new IllegalArgumentException("Invalid interval: " + interval);
-        };
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime start;
 
-        List<Price> prices = priceRepository.findByAssetAndRange(assetId, start, now);
+        // Nếu interval = null hoặc không hợp lệ → lấy toàn bộ
+        if (interval == null || interval.isBlank()) interval = "all";
+
+        switch (interval.toLowerCase()) {
+            case "1d", "day" -> start = now.minusDays(1);
+            case "1w", "week" -> start = now.minusWeeks(1);
+            case "1m", "month" -> start = now.minusMonths(1);
+            case "all" -> start = OffsetDateTime.MIN;
+            default -> throw new IllegalArgumentException("Invalid interval: " + interval);
+        }
+
+        // 🔹 Lấy danh sách giá theo khoảng thời gian (hoặc toàn bộ)
+        List<Price> prices = "all".equalsIgnoreCase(interval)
+                ? priceRepository.findByAssetIdOrderByTimestampAsc(assetId)
+                : priceRepository.findByAssetAndTimestampBetweenOrderByTimestampAsc(assetId, start, now);
+
         if (prices.isEmpty()) return Collections.emptyList();
 
-        // Lấy limit số lượng mới nhất
-        List<Price> limited = prices.stream()
-                .sorted(Comparator.comparing(Price::getTimestamp).reversed())
-                .limit(limit)
-                .sorted(Comparator.comparing(Price::getTimestamp))
-                .collect(Collectors.toList());
+        // 🔹 Giới hạn số lượng bản ghi cuối cùng (nếu có)
+        List<Price> limited = prices.size() > limit
+                ? prices.subList(prices.size() - limit, prices.size())
+                : prices;
 
+        // 🔹 Chuyển sang CandleDTO
         return limited.stream()
                 .map(p -> new CandleDTO(
                         p.getTimestamp(),
-                        p.getPrice(), // open = close nếu không có dữ liệu nến chi tiết
+                        p.getPrice(), // open
                         p.getPrice(), // high
                         p.getPrice(), // low
                         p.getPrice(), // close
@@ -247,6 +284,8 @@ public class PriceServiceImpl implements PriceService {
         PriceDto dto = new PriceDto();
         dto.setId(price.getId());
         dto.setAssetId(price.getAsset().getId());
+        dto.setAssetName(price.getAsset().getName());
+        dto.setAssetSymbol(price.getAsset().getSymbol());
         dto.setPrice(price.getPrice());
         dto.setTimestamp(price.getTimestamp());
         dto.setVolume(price.getVolume());
@@ -259,14 +298,11 @@ public class PriceServiceImpl implements PriceService {
     }
 
     private BigDecimal fetchPriceFromFinnhub(String symbol) {
-        String url = "https://finnhub.io/api/v1/quote?symbol=" + symbol + "&token=" + finnhubApiKey;
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
-        if (response == null || response.get("c") == null) {
-            throw new RuntimeException("Finnhub API returned no price for " + symbol);
+        BigDecimal price = finnhubClient.fetchPrice(symbol);
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("FinnhubClient returned invalid or null price for " + symbol);
         }
-
-        return new BigDecimal(response.get("c").toString());
+        return price;
     }
 
     @Override
@@ -278,25 +314,67 @@ public class PriceServiceImpl implements PriceService {
         List<String> failed = new ArrayList<>();
 
         for (Asset asset : assets) {
-            BigDecimal price = finnhubClient.fetchPrice(asset.getSymbol());
+            try {
+                BigDecimal price = finnhubClient.fetchPrice(asset.getSymbol());
 
-            if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+                if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+                    failed.add(asset.getSymbol());
+                    continue;
+                }
+
+                OffsetDateTime timestamp = OffsetDateTime.now();
+
+                // Bỏ qua nếu timestamp = 0 hoặc null (do Finnhub trả sai)
+                if (timestamp == null || timestamp.toEpochSecond() == 0) {
+                    log.warn("Skipping invalid timestamp for asset {}", asset.getSymbol());
+                    continue;
+                }
+
+                // Tính phần trăm thay đổi so với giá trước đó
+                java.util.concurrent.atomic.AtomicReference<BigDecimal> changePercentRef = new java.util.concurrent.atomic.AtomicReference<>(null);
+                priceRepository.findTopByAssetOrderByTimestampDesc(asset).ifPresent(prev -> {
+                    BigDecimal prevPrice = prev.getPrice();
+                    if (prevPrice != null && prevPrice.compareTo(BigDecimal.ZERO) != 0) {
+                        BigDecimal diff = price.subtract(prevPrice);
+                        BigDecimal percent = diff.divide(prevPrice, 4, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100));
+                        changePercentRef.set(percent);
+                    }
+                });
+
+                // Kiểm tra xem bản ghi này đã tồn tại chưa
+                Optional<Price> existing = priceRepository.findByAssetAndTimestampAndSource(asset, timestamp, "Finnhub");
+
+                if (existing.isPresent()) {
+                    // Update bản ghi cũ
+                    Price existingPrice = existing.get();
+                    existingPrice.setPrice(price);
+                    existingPrice.setChangePercent(changePercentRef.get());
+                    priceRepository.save(existingPrice);
+                    log.info("Updated existing price for asset {} at {}", asset.getSymbol(), timestamp);
+                } else {
+                    // Tạo bản ghi mới
+                    Price record = Price.builder()
+                            .asset(asset)
+                            .price(price)
+                            .timestamp(timestamp)
+                            .source("Finnhub")
+                            .changePercent(changePercentRef.get())
+                            .build();
+
+                    priceRepository.save(record);
+                    log.info("Inserted new price for asset {} at {}", asset.getSymbol(), timestamp);
+                }
+
+                updated++;
+
+                // tránh bị rate-limit API (60 requests/phút)
+                Thread.sleep(1000);
+
+            } catch (Exception ex) {
+                log.warn("Failed to fetch or save price for {}: {}", asset.getSymbol(), ex.getMessage());
                 failed.add(asset.getSymbol());
-                continue;
             }
-
-            Price record = Price.builder()
-                    .asset(asset)
-                    .price(price)
-                    .timestamp(OffsetDateTime.now())
-                    .source("Finnhub")
-                    .build();
-
-            priceRepository.save(record);
-            updated++;
-
-            // để tránh bị rate limit Finnhub (60 req/phút)
-            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
         }
 
         return Map.of(

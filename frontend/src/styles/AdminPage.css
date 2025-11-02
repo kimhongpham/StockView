@@ -1,0 +1,219 @@
+/* Admin Page Styles */
+.admin-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.admin-content {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.admin-header {
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Message Styles */
+.message-success {
+  background: linear-gradient(90deg, #dcfce7, #bbf7d0);
+  border-left: 4px solid #22c55e;
+  color: #166534;
+}
+
+.message-error {
+  background: linear-gradient(90deg, #fee2e2, #fecaca);
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+}
+
+/* Button Base Styles */
+.btn {
+  transition: all 0.3s ease;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Specific Button Styles */
+.btn-reload {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+}
+
+.btn-reload:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4b5563, #374151);
+}
+
+.btn-fetch {
+  background: linear-gradient(135deg, #059669, #047857);
+  color: white;
+}
+
+.btn-fetch:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857, #065f46);
+}
+
+.btn-update {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+}
+
+.btn-update:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+.btn-price {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.btn-price:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* Table Styles */
+.asset-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.asset-table thead {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+
+.asset-table th {
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+.asset-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.asset-table tbody tr:hover {
+  background-color: #f8fafc;
+  transform: scale(1.01);
+}
+
+.asset-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.asset-table tbody tr:nth-child(even):hover {
+  background-color: #f1f5f9;
+}
+
+/* Loading Animation */
+.loading-spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #4f46e5;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-content {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  
+  .admin-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .admin-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .asset-table {
+    font-size: 0.875rem;
+  }
+  
+  .asset-table th,
+  .asset-table td {
+    padding: 0.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .admin-content {
+    background: rgba(30, 41, 59, 0.95);
+    color: #f1f5f9;
+  }
+  
+  .asset-table {
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+  
+  .asset-table tbody tr:hover {
+    background-color: #334155;
+  }
+  
+  .asset-table tbody tr:nth-child(even) {
+    background-color: #475569;
+  }
+  
+  .asset-table tbody tr:nth-child(even):hover {
+    background-color: #4b5563;
+  }
+}

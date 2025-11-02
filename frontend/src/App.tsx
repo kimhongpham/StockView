@@ -10,12 +10,15 @@ import {
 import MainLayout from "./components/layout/MainLayout";
 import DashboardPage from "./pages/DashboardPage";
 import StockPage from "./pages/StockPage";
+import StockDetailPage from "./pages/StockDetailPage";
 import WatchlistPage from "./pages/WatchlistPage";
 import WalletPage from "./pages/WalletPage";
+import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
 import OAuth2RedirectHandler from "./pages/OAuth2RedirectHandler";
 import LoginModal from "./components/modals/LoginModal";
 import { useAuthStore } from "./store/authStore";
-import "./App.css";
+import "./styles/index.css";
 
 // Component để xử lý active page và navigation
 const AppContent: React.FC = () => {
@@ -46,8 +49,9 @@ const AppContent: React.FC = () => {
       favorit: "/favorit",
       wallet: "/wallet",
       profile: "/profile",
+      admin: "/admin",
     };
-    
+
     if (routes[page]) {
       navigate(routes[page]);
     }
@@ -68,12 +72,12 @@ const AppContent: React.FC = () => {
   const handleLogoutFromHeader = () => {
     logout();
     // Có thể redirect về dashboard nếu cần
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
     <>
-      <MainLayout 
+      <MainLayout
         activePage={getActivePage()}
         onPageChange={handlePageChange}
         onLoginClick={() => setShowLoginModal(true)}
@@ -82,10 +86,12 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/stock" element={<StockPage />} />
+          <Route path="/stock" element={<StockPage />} />{" "}
+          <Route path="/stock/:symbol" element={<StockDetailPage />} />{" "}
           <Route path="/favorit" element={<WatchlistPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/wallet" element={<WalletPage />} />
-          <Route path="/profile" element={<div className="page active" id="profile"><h1 className="page-title">Profile</h1><div className="chart-container"><p>Tính năng hồ sơ đang được phát triển...</p></div></div>} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
         </Routes>
       </MainLayout>

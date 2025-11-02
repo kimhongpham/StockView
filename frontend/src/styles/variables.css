@@ -1,0 +1,38 @@
+/* Import font từ Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* ===== CSS VARIABLES (Black & White + Pastel Pink Accent) ===== */
+:root {
+  --primary-color: #f8bbd0; /* hồng pastel nhạt */
+  --secondary-color: #64748b; /* xám nhạt phụ */
+  --bg-color: #f9fafb; /* nền trắng tinh */
+  --card-bg: #ffffff; /* nền thẻ trắng */
+  --text-color: #111827; /* chữ đen đậm */
+  --border-color: #e5e7eb; /* viền nhạt */
+  --hover-color: #f3f4f6; /* hover sáng */
+  --positive-color: #10b981; /* xanh lá - thu nhập */
+  --negative-color: #ef4444; /* đỏ - chi tiêu */
+  --accent-color: #f8bbd0; /* hồng pastel điểm nhấn */
+  --sidebar-width: 250px;
+  --header-height: 70px;
+  --transition: all 0.3s ease;
+  --text-muted: #6b7280; /* xám chữ phụ */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --gradient-primary: linear-gradient(135deg, #f8bbd0, #fde2e4);
+}
+
+.dark-mode {
+  --primary-color: #f472b6;
+  --accent-color: #f9a8d4;
+  --secondary-color: #4b5563; /* xám đậm phụ */
+  --bg-color: #0f172a; /* nền tối */
+  --card-bg: #1e293b; /* thẻ tối */
+  --text-color: #f9fafb; /* chữ sáng */
+  --border-color: #334155; /* viền tối */
+  --hover-color: #273449; /* hover tối */
+  --positive-color: #10b981;
+  --negative-color: #ef4444;
+  --text-muted: #94a3b8;
+}

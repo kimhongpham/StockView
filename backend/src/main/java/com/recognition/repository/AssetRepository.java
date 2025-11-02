@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.recognition.entity.Asset;
@@ -21,15 +19,9 @@ public interface AssetRepository extends JpaRepository<Asset, UUID>, JpaSpecific
 
     boolean existsBySymbol(String symbol);
 
+    boolean existsById(UUID assetId);
+
+    void deleteById(UUID assetId);
+
     List<Asset> findByIsActiveTrue();
-
-    @Query("SELECT a FROM Asset a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :name, '%'))")
-    List<Asset> findByNameContainingIgnoreCase(@Param("name") String name);
-
-    // Kiểm tra name có tồn tại chưa
-    boolean existsByName(String name);
-
-    // Tìm asset active theo symbol
-    Optional<Asset> findBySymbolAndIsActiveTrue(String symbol);
-
 }

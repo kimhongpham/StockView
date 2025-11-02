@@ -1,12 +1,10 @@
 import { create } from "zustand";
 import {
   fetchAllAssets,
-  fetchMarketAssets,
+  fetchNewMarketStocks,
   fetchLatestPrice,
   fetchPriceHistory,
   fetchAndSaveAssetPrice,
-  createAsset,
-  updateAsset,
   deleteAsset,
 } from "../utils/api";
 
@@ -32,13 +30,11 @@ interface AssetStore {
   loading: boolean;
   error: string | null;
 
-  // actions
+  fetchAllAssets: () => Promise<void>;
   fetchMarketAssets: (type: string) => Promise<void>;
   fetchLatestPrices: (assetIds: string[]) => Promise<void>;
   refreshAssetPrice: (assetId: string) => Promise<void>;
   fetchPriceHistory: (assetId: string) => Promise<Price[]>;
-  createAsset: (data: Partial<Asset>) => Promise<void>;
-  updateAsset: (assetId: string, data: Partial<Asset>) => Promise<void>;
   deleteAsset: (assetId: string) => Promise<void>;
 }
 
@@ -48,14 +44,31 @@ export const useAssetStore = create<AssetStore>((set, get) => ({
   loading: false,
   error: null,
 
-  // Lấy danh sách cổ phiếu thị trường
-  fetchMarketAssets: async (type: string) => {
+  // Lấy tất cả asset trong DB
+  fetchAllAssets: async () => {
     set({ loading: true, error: null });
     try {
-      const assets = await fetchMarketAssets(type);
+      const assets = await fetchAllAssets();
       set({ assets });
     } catch (err: any) {
-      set({ error: err.message || "Failed to fetch market assets" });
+      console.error("❌ Failed to fetch all assets:", err);
+      set({ error: err.message || "Failed to fetch all assets" });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // Lấy danh sách cổ phiếu thị trường (fetch từ Finnhub và lưu DB)
+  fetchMarketAssets: async () => {
+    set({ loading: true, error: null });
+    try {
+      const assets = await fetchNewMarketStocks();
+      set({ assets });
+    } catch (err: any) {
+      console.error("❌ Failed to fetch new market stocks:", err);
+      set({
+        error: err.message || "Failed to fetch new market stocks",
+      });
     } finally {
       set({ loading: false });
     }
@@ -101,27 +114,6 @@ export const useAssetStore = create<AssetStore>((set, get) => ({
     } catch (err) {
       console.error("❌ Failed to fetch price history:", err);
       return [];
-    }
-  },
-
-  // CRUD cho Asset
-  createAsset: async (data) => {
-    try {
-      await createAsset(data);
-      const updated = await fetchAllAssets();
-      set({ assets: updated });
-    } catch (err) {
-      console.error("❌ Failed to create asset:", err);
-    }
-  },
-
-  updateAsset: async (assetId, data) => {
-    try {
-      await updateAsset(assetId, data);
-      const updated = await fetchAllAssets();
-      set({ assets: updated });
-    } catch (err) {
-      console.error("❌ Failed to update asset:", err);
     }
   },
 

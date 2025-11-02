@@ -1,35 +1,36 @@
 import axios from "axios";
 
+// Axios instance
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // hoặc "/api" nếu có proxy
-  timeout: 10000,
+  baseURL: "http://localhost:8080/api",
+  timeout: 30000, // 30s
 });
-
 
 // Types
 export interface Asset {
   id: string;
   symbol: string;
-  name?: string;
-  // backend có thể trả thêm field khác
+  name: string;
+  type: string;
 }
 
 export interface LatestPrice {
   price: number;
   volume?: number;
-  changePercent24h?: number; // % 24h
+  changePercent24h?: number;
   timestamp?: string;
   source?: string;
 }
 
 export interface ChangeResponse {
-  percent?: number; // e.g. change over requested period in percent
+  percent?: number;
   absolute?: number;
 }
 
 export interface ChartPoint {
-  timestamp: string | number; // ISO string or unix ms
+  timestamp: string | number;
   price: number;
+  volume?: number;
 }
 
 export interface StatsResponse {
@@ -39,73 +40,127 @@ export interface StatsResponse {
   [k: string]: any;
 }
 
-// API functions
-
-// Hàm fetchPriceHistory
-export async function fetchPriceHistory(assetId) {
-  const response = await api.get(`/prices/${assetId}/latest`);
-  return response.data;
-}
-
-export const fetchAllAssets = async () => {
-  const res = await api.get("/assets");
-  return res.data;
+// ----------------- API functions -----------------
+// Dash board APIs
+// Lấy giá mới nhất
+export const fetchLatestPrice = async (assetId: string) => {
+  const res = await fetch(`/api/prices/${assetId}/latest`);
+  if (!res.ok) throw new Error("Failed to fetch latest price");
+  return await res.json();
 };
 
-export async function fetchMarketAssets(scope = "stocks"): Promise<Asset[]> {
-  // GET /api/assets/market/stocks
-  const url = `/assets/market/${scope}`;
-  const resp = await api.get<Asset[]>(url);
+// Lấy dữ liệu biểu đồ (chart data)
+export async function fetchPriceChart(
+  assetId: string,
+  interval: string = "1m",
+  limit: number = 100
+) {
+  const res = await fetch(
+    `/api/prices/${assetId}/chart?interval=${interval}&limit=${limit}`
+  );
+  if (!res.ok) throw new Error("Không thể tải dữ liệu biểu đồ");
+  const json = await res.json();
+  return json.data || [];
+}
+
+// Lấy top giá (tăng/giảm)
+export async function fetchTopPrices(type: "gainers" | "losers", limit = 5) {
+  const res = await fetch(`http://localhost:8080/api/prices/top?limit=${limit}&type=${type}`);
+  if (!res.ok) throw new Error("Failed to fetch top prices");
+  const data = await res.json();
+  return data.data; // backend trả về { type, success, data, count }
+}
+
+// Stock Page APIs
+//Lấy tổng quan tài sản (Asset + Company + Metrics + Price)
+export async function fetchAssetOverview(symbol: string) {
+  const res = await fetch(`/assets/${symbol}/overview`);
+  if (!res.ok) throw new Error("Failed to fetch asset overview");
+  const data = await res.json();
+  return data; 
+}
+
+//Lấy lịch sử giá (30 ngày gần nhất)
+export async function fetchPriceHistory(assetId: string, limit = 30) {
+  const res = await fetch(`/api/prices/${assetId}/history/paged?page=0&size=${limit}`);
+  if (!res.ok) throw new Error("Failed to fetch price history");
+  return res.json();
+}
+
+//Lấy thống kê giá (min, max, avg, YTD)
+export async function fetchPriceStats(assetId: string, range = "month") {
+  const res = await fetch(`/prices/${assetId}/stats?range=${range}`);
+  if (!res.ok) throw new Error("Failed to fetch price stats");
+  const data = await res.json();
+  return data.data;
+}
+
+// StockDetailPage APIs
+// Lấy chi tiết một asset
+export async function fetchAssetDetails(code: string): Promise<Asset> {
+  const resp = await api.get<Asset>(`/assets/${code}/details`);
   return resp.data;
 }
 
-export async function fetchLatestPrice(assetId: string): Promise<LatestPrice> {
-  // GET /api/prices/{assetId}/latest
-  const resp = await api.get<LatestPrice>(`/prices/${assetId}/latest`);
+// Lấy thông tin công ty theo symbol
+export async function fetchCompanyInfo(symbol: string): Promise<any> {
+  const resp = await api.get(`/assets/${symbol}/company`);
   return resp.data;
 }
 
-export async function fetchChange7D(assetId: string, hours = 168): Promise<ChangeResponse> {
-  // GET /api/prices/{assetId}/change?hours=168
-  const resp = await api.get<ChangeResponse>(`/prices/${assetId}/change`, {
-    params: { hours },
-  });
-  return resp.data;
-}
-
-export async function fetchChart30D(assetId: string, interval = "1d", limit = 30): Promise<ChartPoint[]> {
-  // GET /api/prices/{assetId}/chart?interval=1d&limit=30
-  const resp = await api.get<ChartPoint[]>(`/prices/${assetId}/chart`, {
-    params: { interval, limit },
-  });
-  return resp.data;
-}
-
+// Lấy stats / thông số
 export async function fetchStats(assetId: string): Promise<StatsResponse> {
-  // optional: GET /api/prices/{assetId}/stats
   const resp = await api.get<StatsResponse>(`/prices/${assetId}/stats`);
   return resp.data;
 }
 
-// Helpful: fetch asset by symbol or id (used in your current code)
-export async function fetchAssetById(idOrSymbol: string): Promise<Asset | null> {
-  // Try by id first
-  try {
-    const resp = await api.get<Asset>(`/assets/${idOrSymbol}`);
-    return resp.data;
-  } catch {
-    // fallback: maybe the backend exposes search by symbol; try market list and find
-    try {
-      const markets = await fetchMarketAssets("stocks");
-      const found = markets.find(
-        (a) =>
-          a.id === idOrSymbol ||
-          a.symbol?.toUpperCase() === idOrSymbol.toUpperCase() ||
-          a.name?.toUpperCase() === idOrSymbol.toUpperCase()
-      );
-      return found ?? null;
-    } catch {
-      return null;
-    }
+// AssetStore APIs
+// Lấy tất cả assets
+export const fetchAllAssets = async (): Promise<Asset[]> => {
+  const res = await api.get("/assets");
+  return res.data;
+};
+
+// Lấy danh sách thị trường (stocks, crypto, ...)
+export async function fetchNewMarketStocks() {
+  const res = await fetch("http://localhost:8080/api/assets/market/stocks/new");
+  if (!res.ok) throw new Error("Failed to fetch new market stocks");
+  return res.json();
+}
+
+// Gọi backend fetch giá mới nhất + lưu DB
+export async function fetchAndSaveAssetPrice(assetId: string) {
+  const res = await fetch(`/api/prices/${assetId}/fetch`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to fetch and save asset price");
+  return res.json();
+}
+
+// ========== ADMIN APIs ==========
+
+// Cập nhật giá cho tất cả asset (admin/system)
+export const fetchAndSaveAllPrices = async () => {
+  const res = await api.post(`/prices/fetch-all`);
+  return res.data;
+};
+
+// Xóa asset theo ID
+export const deleteAsset = async (assetId: string) => {
+  const res = await fetch(`/api/assets/${assetId}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.error || "Failed to delete asset");
   }
+
+  return res.json();
+};
+
+// Lấy thay đổi giá theo giờ (ví dụ 7 ngày = 168 giờ)
+export async function fetchChange(assetId: string, hours = 168): Promise<ChangeResponse> {
+  const resp = await api.get<ChangeResponse>(`/prices/${assetId}/change`, {
+    params: { hours },
+  });
+  return resp.data;
 }

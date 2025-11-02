@@ -1,0 +1,47 @@
+/* ===== LAYOUT STYLES ===== */
+
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  transition: background 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
+  padding: 1.5rem;
+  transition: margin 0.3s ease;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 28px;
+  color: var(--text-color);
+  letter-spacing: -0.3px;
+}
+
+/* Responsive Layout */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px 15px;
+  }
+}
+
+/* Footer */
