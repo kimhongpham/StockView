@@ -8,16 +8,37 @@ interface Props {
 }
 
 const AdminActions: React.FC<Props> = ({ onReload, onFetchNew, onUpdateAll, loading }) => (
-  <div className="space-x-2">
-    <button onClick={onReload} disabled={loading} className="px-4 py-2 bg-gray-500 text-white rounded">
+  <div className="admin-actions-container">
+    <button 
+      onClick={onReload} 
+      disabled={loading} 
+      className="admin-btn btn-secondary"
+    >
+      <span className="btn-icon">🔄</span>
       Reload Assets
     </button>
-    <button onClick={onFetchNew} disabled={loading} className="px-4 py-2 bg-green-600 text-white rounded">
-      Fetch New Market Stocks
+    <button 
+      onClick={onFetchNew} 
+      disabled={loading} 
+      className="admin-btn btn-success"
+    >
+      <span className="btn-icon">📥</span>
+      Fetch New Stocks
     </button>
-    <button onClick={onUpdateAll} disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">
+    <button 
+      onClick={onUpdateAll} 
+      disabled={loading} 
+      className="admin-btn btn-primary"
+    >
+      <span className="btn-icon">⚡</span>
       Update All Prices
     </button>
+    
+    {loading && (
+      <div className="loading-overlay">
+        <div className="spinner"></div>
+      </div>
+    )}
   </div>
 );
 

@@ -10,7 +10,7 @@
   background-color: var(--card-bg);
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 5%);
   border: 1px solid var(--border-color);
 }
 
@@ -24,7 +24,7 @@
   background-color: var(--card-bg);
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 5%);
   border: 1px solid var(--border-color);
 }
 
@@ -49,11 +49,11 @@
 
 .wallet-stat:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 10%);
   transition: all 0.3s ease;
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .wallet-layout {
     grid-template-columns: 1fr;
   }

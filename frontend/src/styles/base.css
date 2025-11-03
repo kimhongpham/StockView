@@ -1,43 +1,71 @@
-/* Reset & set font mặc định */
-* {
+/* Modern Base Styles */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
-  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Toàn trang */
+/* Document */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
 body {
+  font-family: var(--font-family);
+  line-height: var(--line-height-normal);
+  color: var(--text-color);
   background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: var(--transition);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
-/* Heading */
-h1, h2, h3 {
-  font-weight: 600;
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
   color: var(--text-color);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.025em;
+  margin-bottom: var(--spacing-4);
 }
 
-/* Đoạn văn */
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
 p {
-  font-weight: 400;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-4);
+  line-height: var(--line-height-relaxed);
 }
 
-/* Nút bấm */
+/* Interactive Elements */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-600);
+}
+
 button {
-  font-weight: 500;
-  color: #fff;
-  background-color: var(--primary-color);
-  border: none;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-medium);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
   padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  background-color: var(--primary-color);
+  color: white;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -50,8 +78,8 @@ button:hover {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #4285f4;
+  border: 4px solid rgb(243 243 243);
+  border-top: 4px solid rgb(66 133 244);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

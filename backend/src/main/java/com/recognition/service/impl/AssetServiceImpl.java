@@ -1,12 +1,14 @@
 package com.recognition.service.impl;
 
 import com.recognition.client.FinnhubClient;
+import com.recognition.dto.PriceDto;
 import com.recognition.entity.Asset;
 import com.recognition.entity.Price;
 import com.recognition.exception.ResourceNotFoundException;
 import com.recognition.repository.AssetRepository;
 import com.recognition.repository.PriceRepository;
 import com.recognition.service.AssetService;
+import com.recognition.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,6 +30,7 @@ public class AssetServiceImpl implements AssetService {
     private final AssetRepository assetRepository;
     private final PriceRepository priceRepository;
     private final FinnhubClient finnhubClient;
+    private final PriceService priceService;
 
     @Override
     public List<Asset> getAllAssets() {
@@ -36,6 +39,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public Map<String, Object> getAssetOverview(String code) {
+        // 1️⃣ Tìm asset trong DB
         Asset asset;
         if (code.matches("^[0-9a-fA-F\\-]{36}$")) {
             asset = assetRepository.findById(UUID.fromString(code))
@@ -45,66 +49,35 @@ public class AssetServiceImpl implements AssetService {
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found (symbol): " + code));
         }
 
+        // 2️⃣ Tạo map kết quả cơ bản
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", asset.getId());
         result.put("symbol", asset.getSymbol());
         result.put("name", asset.getName());
         result.put("description", asset.getDescription());
+        result.put("isActive", asset.getIsActive());
+        result.put("createdAt", asset.getCreatedAt());
+        result.put("updatedAt", asset.getUpdatedAt());
 
-        // 🔹 Thêm thông tin công ty (nếu có)
-        try {
-            Map<String, Object> company = finnhubClient.fetchCompanyProfile(asset.getSymbol());
-            if (company != null && !company.isEmpty()) {
-                result.put("country", company.get("country"));
-                result.put("exchange", company.get("exchange"));
-                result.put("industry", company.get("finnhubIndustry"));
-                result.put("website", company.get("weburl"));
-                result.put("logo", company.get("logo"));
-                result.put("ipoDate", company.get("ipo"));
-                result.put("marketCapitalization", company.get("marketCapitalization"));
-                result.put("shareOutstanding", company.get("shareOutstanding"));
-            }
-        } catch (Exception e) {
-            log.warn("Unable to fetch company info for {}: {}", asset.getSymbol(), e.getMessage());
-        }
+        // 3️⃣ Lấy bản ghi giá mới nhất
+        Price latestPrice = priceRepository
+                .findTopByAssetOrderByTimestampDesc(asset)
+                .orElse(null);
 
-        // 🔹 Thêm thông tin giá
-        try {
-            BigDecimal price = finnhubClient.fetchPrice(asset.getSymbol());
-            if (price != null) {
-                result.put("source", "Finnhub");
-                result.put("currentPrice", price);
-                result.put("timestamp", OffsetDateTime.now().toString());
-            } else {
-                populatePriceFromDB(asset, result);
-            }
-        } catch (Exception e) {
-            log.error("Error fetching price for {}: {}", asset.getSymbol(), e.getMessage());
-            populatePriceFromDB(asset, result);
-        }
-
-        // 🔹 Thêm chỉ số tài chính (P/E, P/B, ROE, Dividend Yield)
-        try {
-            Map<String, Object> metrics = finnhubClient.fetchStockMetric(asset.getSymbol());
-            if (metrics != null && !metrics.isEmpty()) {
-                result.put("peRatio", metrics.get("peBasicExclExtraTTM"));
-                result.put("pbRatio", metrics.get("pbAnnual"));
-                result.put("roe", metrics.get("roeTTM"));
-                result.put("dividendYield", metrics.get("dividendYieldIndicatedAnnual"));
-                result.put("ytdChangePercent", metrics.get("yearToDatePriceReturnDaily"));
-            }
-        } catch (Exception e) {
-            log.warn("Unable to fetch metrics for {}: {}", asset.getSymbol(), e.getMessage());
-        }
-
-// 🔹 Thêm khối lượng giao dịch hiện tại (volume)
-        try {
-            BigDecimal volume = finnhubClient.fetchQuoteVolume(asset.getSymbol());
-            if (volume != null) {
-                result.put("volume", volume);
-            }
-        } catch (Exception e) {
-            log.warn("Unable to fetch volume for {}: {}", asset.getSymbol(), e.getMessage());
+        if (latestPrice != null) {
+            result.put("currentPrice", latestPrice.getPrice());
+            result.put("volume", latestPrice.getVolume());
+            result.put("changePercent", latestPrice.getChangePercent());
+            result.put("peRatio", latestPrice.getPeRatio());
+            result.put("pbRatio", latestPrice.getPbRatio());
+            result.put("high24h", latestPrice.getHigh24h());
+            result.put("low24h", latestPrice.getLow24h());
+            result.put("marketCap", latestPrice.getMarketCap());
+            result.put("timestamp", latestPrice.getTimestamp());
+            result.put("source", latestPrice.getSource());
+        } else {
+            result.put("currentPrice", null);
+            result.put("source", "Database (no price yet)");
         }
 
         return result;
@@ -137,7 +110,7 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
-        log.info("Successfully fetched and stored {} new market stocks.", result.size());
+        log.info("✅ Added {} new assets to database.", result.size());
         return result;
     }
 
@@ -207,29 +180,12 @@ public class AssetServiceImpl implements AssetService {
     @Override
     @Transactional
     public Price fetchAndSavePrice(UUID assetId) {
-        Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
+        PriceDto priceDto = priceService.fetchAndSavePrice(assetId);
 
-        BigDecimal priceValue;
-        String source;
-
-        try {
-            priceValue = finnhubClient.fetchPrice(asset.getSymbol());
-            source = "Finnhub";
-        } catch (Exception e) {
-            Price lastPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset)
-                    .orElseThrow(() -> new ResourceNotFoundException("No price available for asset"));
-            priceValue = lastPrice.getPrice();
-            source = "mock-db";
-        }
-
-        Price price = new Price();
-        price.setAsset(asset);
-        price.setPrice(priceValue);
-        price.setTimestamp(OffsetDateTime.now());
-        price.setSource(source);
-        return priceRepository.save(price);
+        return priceRepository.findById(priceDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Price not found after save: " + priceDto.getId()));
     }
+
 
     @Override
     public boolean existsBySymbol(String symbol) {

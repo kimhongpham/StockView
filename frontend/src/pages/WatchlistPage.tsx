@@ -77,13 +77,6 @@ const WatchlistPage: React.FC = () => {
       </h1>
 
       <div className="flex items-center gap-3 mb-4">
-        <input
-          type="text"
-          placeholder="Tìm kiếm mã hoặc tên..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 w-64"
-        />
         <div className="ml-auto">
           {loading ? (
             <div className="flex items-center gap-2 text-gray-500">

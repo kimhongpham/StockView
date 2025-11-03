@@ -88,7 +88,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="page active" id="dashboard">
-      <h1 className="page-title">Tổng quan thị trường</h1>
+      <h1 className="text-2xl font-bold mb-4">Tổng Quan Thị Trường</h1>
 
       {/* Giữ nguyên biểu đồ */}
       <ChartSection

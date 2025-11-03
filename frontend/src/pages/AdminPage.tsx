@@ -49,7 +49,7 @@ const AdminPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      <h1 className="page-title">Admin Dashboard</h1>
 
       {message && (
         <div className="p-2 bg-blue-100 text-blue-800 rounded">{message}</div>

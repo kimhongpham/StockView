@@ -7,17 +7,16 @@ interface AssetOverview {
   id: string;
   symbol: string;
   name: string;
-  exchange?: string;
-  industry?: string;
-  country?: string;
-  marketCapitalization?: number;
+  currentPrice?: number;
+  latestPrice?: number; // mapped từ currentPrice
+  changePercent?: number; // mapped từ changePercent
+  change24h?: number; // mapped từ changePercent
   peRatio?: number;
   pbRatio?: number;
-  roe?: number;
-  dividendYield?: number;
-  ytdChangePercent?: number;
-  currentPrice?: number;
-  logo?: string;
+  pe?: number; // mapped từ peRatio
+  pb?: number; // mapped từ pbRatio
+  volume?: number | null;
+  chart30d?: number[];
 }
 
 const StockPage: React.FC = () => {
@@ -40,11 +39,33 @@ const StockPage: React.FC = () => {
         const detailedAssets = await Promise.all(
           assetList.map(async (a: any) => {
             try {
-              const overviewRes = await axios.get(`/api/assets/${a.symbol}/overview`);
-              return overviewRes.data;
+              const overviewRes = await axios.get(
+                `/api/assets/${a.symbol}/overview`
+              );
+              const o = overviewRes.data;
+
+              // 3️⃣ Map các trường backend sang tên FE đang dùng
+              return {
+                id: o.id,
+                symbol: o.symbol,
+                name: o.name,
+                latestPrice: o.currentPrice ?? 0, // map currentPrice → latestPrice
+                change24h: o.changePercent ?? 0, // map changePercent → change24h
+                volume: o.volume ?? 0,
+                pe: o.peRatio ?? null,
+                pb: o.pbRatio ?? null,
+                chart30d: o.chart30d ?? [], // nếu backend chưa có, để mảng rỗng
+              };
             } catch (err) {
               console.warn(`⚠️ Không lấy được overview cho ${a.symbol}`);
-              return a;
+              return {
+                ...a,
+                latestPrice: 0,
+                change24h: 0,
+                pe: null,
+                pb: null,
+                chart30d: [],
+              };
             }
           })
         );
@@ -76,13 +97,6 @@ const StockPage: React.FC = () => {
       <h1 className="page-title font-bold text-2xl mb-4">Tất cả cổ phiếu</h1>
 
       <div className="flex items-center gap-3 mb-4">
-        <input
-          type="text"
-          placeholder="Tìm kiếm mã hoặc tên..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 w-64"
-        />
         <div className="ml-auto">
           {loading ? (
             <div className="flex items-center gap-2 text-gray-500">

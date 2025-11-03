@@ -18,42 +18,66 @@ const AssetTable: React.FC<Props> = ({ assets, onDelete, loading }) => {
     }
   };
 
+  if (assets.length === 0) {
+    return (
+      <div className="admin-table-empty-state">
+        <p>No assets found</p>
+      </div>
+    );
+  }
+
   return (
-    <table className="min-w-full border mt-4">
-      <thead>
-        <tr className="bg-gray-200">
-          <th className="p-2 border">Symbol</th>
-          <th className="p-2 border">Name</th>
-          <th className="p-2 border">Type</th>
-          <th className="p-2 border">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {assets.map((asset) => (
-          <tr key={asset.id}>
-            <td className="border p-2">{asset.symbol}</td>
-            <td className="border p-2">{asset.name}</td>
-            <td className="border p-2">{asset.type}</td>
-            <td className="border p-2 space-x-2">
-              <button
-                onClick={() => handleUpdatePrice(asset.id)}
-                className="px-3 py-1 bg-blue-500 text-white rounded"
-                disabled={loading}
-              >
-                Update Price
-              </button>
-              <button
-                onClick={() => onDelete(asset.id)}
-                className="px-3 py-1 bg-red-500 text-white rounded"
-                disabled={loading}
-              >
-                Delete
-              </button>
-            </td>
+    <div className="admin-table-container">
+      <table className="admin-table">
+        <thead className="admin-table-header">
+          <tr>
+            <th className="admin-table-th text-center" style={{ width: "60px" }}>#</th>
+            <th className="admin-table-th">Symbol</th>
+            <th className="admin-table-th">Name</th>
+            <th className="admin-table-th">Type</th>
+            <th className="admin-table-th actions-column">Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="admin-table-body">
+          {assets.map((asset, index) => (
+            <tr key={asset.id} className="admin-table-row">
+              <td className="admin-table-td text-center">{index + 1}</td>
+              <td className="admin-table-td font-mono">{asset.symbol.toUpperCase()}</td>
+              <td className="admin-table-td">{asset.name}</td>
+              <td className="admin-table-td">
+                <span className="asset-type-badge">{asset.type}</span>
+              </td>
+              <td className="admin-table-td actions-cell">
+                <div className="actions-container">
+                  <button
+                    onClick={() => handleUpdatePrice(asset.id)}
+                    className="btn-action btn-update"
+                    disabled={loading}
+                    title="Update Price"
+                  >
+                    <span className="action-icon">🔄</span>
+                  </button>
+                  <button
+                    onClick={() => onDelete(asset.id)}
+                    className="btn-action btn-delete"
+                    disabled={loading}
+                    title="Delete Asset"
+                  >
+                    <span className="action-icon">🗑️</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
+      {loading && (
+        <div className="table-loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
+    </div>
   );
 };
 

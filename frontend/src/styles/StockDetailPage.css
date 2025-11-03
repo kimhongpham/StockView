@@ -1,42 +1,55 @@
-/* StockDetailPage.css */
+/* Modern Stock Detail Page */
 .stock-detail-page {
   min-height: 100vh;
-  background-color: #f8fafc;
-  padding: 2rem 0;
-}
-
-.dark .stock-detail-page {
-  background-color: #0f172a;
+  background-color: var(--bg-color);
+  padding: var(--spacing-8) 0;
 }
 
 .stock-detail-container {
-  max-width: 1200px;
+  max-width: var(--container-width);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 var(--spacing-4);
 }
 
 /* Stock Header */
 .stock-header {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-xl);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-8);
+  margin-bottom: var(--spacing-8);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.dark .stock-header {
-  background-color: #1e293b;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+.stock-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
 }
 
-.stock-title-section .stock-symbol {
+/* Stock Title Section */
+.stock-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.stock-symbol {
   font-size: 2rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
   font-weight: bold;
   color: #1e293b;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.5rem;
 }
 
 .dark .stock-title-section .stock-symbol {
@@ -99,7 +112,7 @@
   background-color: white;
   padding: 1.25rem;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
   border: 1px solid #e2e8f0;
 }
 
@@ -175,7 +188,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .stock-header {
     flex-direction: column;
     gap: 1rem;
@@ -198,7 +211,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .stock-detail-page {
     padding: 1rem 0;
   }

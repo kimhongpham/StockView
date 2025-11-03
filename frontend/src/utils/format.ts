@@ -1,14 +1,42 @@
-export const formatNumber = (n?: number | null) => {
-  if (n == null) return "—";
-  return n.toLocaleString();
+// ===== NUMBER FORMATTING UTILITIES =====
+
+/**
+ * Format number with locale string, fallback to em dash for null/undefined
+ */
+export const formatNumber = (value?: number | null): string => {
+  if (value == null) return "—";
+  return value.toLocaleString();
 };
 
-export const formatPrice = (p?: number | null) => {
-  if (p == null) return "—";
-  return p < 1000 ? p.toFixed(2) : Math.round(p).toLocaleString();
+/**
+ * Format price with conditional decimal places
+ * - Prices < 1000: 2 decimal places
+ * - Prices >= 1000: rounded to whole number with thousand separators
+ */
+export const formatPrice = (price?: number | null): string => {
+  if (price == null) return "—";
+  
+  return price < 1000 
+    ? price.toFixed(2)
+    : Math.round(price).toLocaleString();
 };
 
-export const getChangeClass = (v?: number | null) => {
-  if (v == null) return "";
-  return v >= 0 ? "text-green-600" : "text-red-600";
+/**
+ * Get CSS class name based on value change (positive/negative/neutral)
+ */
+export const getChangeClass = (value?: number | null): string => {
+  if (value == null) return "change-neutral";
+  
+  return value >= 0 ? "change-positive" : "change-negative";
+};
+
+// Alternative version with more detailed classes
+export const getChangeVariant = (value?: number | null): string => {
+  if (value == null) return "change-neutral";
+  
+  if (value > 0) return "change-positive-strong";
+  if (value === 0) return "change-neutral";
+  if (value > -0.05) return "change-negative-weak";
+  
+  return "change-negative-strong";
 };

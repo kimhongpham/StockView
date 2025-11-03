@@ -1,116 +1,251 @@
-/* ===== COMPONENTS STYLES ===== */
+/* Modern Component System */
 
 /* KPI Cards */
+.kpi-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-6);
+  transition: all var(--transition-normal);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
 
 .kpi-title {
-  font-size: 0.9rem;
-  color: var(--secondary-color);
-  margin-bottom: 10px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2);
+  font-weight: var(--font-weight-medium);
 }
 
 .kpi-value {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-size: 1.875rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-color);
+  line-height: 1.2;
+  margin-bottom: var(--spacing-2);
 }
 
-/* Chart Containers */
+.kpi-change {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+}
+
+/* Chart Components */
 .chart-container {
   background-color: var(--card-bg);
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+  transition: all var(--transition-normal);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
 }
 
 .chart-title {
-  font-size: 1.2rem;
-  margin-bottom: 15px;
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
-/* Tables */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--card-bg);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color);
+.chart-legend {
+  display: flex;
+  gap: var(--spacing-4);
+  font-size: 0.875rem;
 }
 
-.data-table th,
-.data-table td {
-  padding: 12px 15px;
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Table Components */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.data-table th {
+  background-color: var(--bg-color);
+  padding: var(--spacing-4);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
-.data-table th {
-  background-color: var(--hover-color);
-  font-weight: 600;
+.data-table td {
+  padding: var(--spacing-4);
+  font-size: 0.875rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.data-table tr:last-child td {
+.data-table tbody tr:hover {
+  background-color: var(--hover-color);
+}
+
+.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.data-table tr:hover {
-  background-color: var(--hover-color);
+/* Status Indicators */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-success {
+  background-color: var(--success-100);
+  color: var(--success-700);
+}
+
+.status-success .status-dot {
+  background-color: var(--success-500);
+}
+
+.status-warning {
+  background-color: var(--warning-100);
+  color: var(--warning-700);
+}
+
+.status-warning .status-dot {
+  background-color: var(--warning-500);
+}
+
+.status-error {
+  background-color: var(--error-100);
+  color: var(--error-700);
+}
+
+.status-error .status-dot {
+  background-color: var(--error-500);
+}
+
+/* Value States */
+.positive {
+  color: var(--success-500);
+}
+
+.negative {
+  color: var(--error-500);
 }
 
 /* Dropdown Menu */
+.dropdown {
+  position: relative;
+}
 
+.dropdown-content {
+  position: absolute;
+  top: calc(100% + var(--spacing-2));
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2);
+  min-width: 200px;
+  box-shadow: var(--shadow-lg);
+  animation: slideDown var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--text-color);
+  font-size: 0.875rem;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dropdown-item:hover {
+  background-color: var(--hover-color);
+}
+
+/* Animations */
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-var(--spacing-2));
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* States */
-.positive {
-  color: var(--positive-color);
-}
-
-.negative {
-  color: var(--negative-color);
-}
-
-/* Premium Features */
-
-.premium-feature {
-  transition: opacity 0.3s ease;
-}
-
-/* Hover Effects */
-
-.chart-container:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
-@media (max-width: 768px) {
-  
-  .data-table {
-    font-size: 0.8rem;
+/* Responsive */
+@media (width <= 768px) {
+  .kpi-value {
+    font-size: 1.5rem;
   }
-
+  
+  .chart-container {
+    padding: var(--spacing-4);
+  }
+  
   .data-table th,
   .data-table td {
-    padding: 8px 5px;
+    padding: var(--spacing-3);
+  }
+  
+  .chart-legend {
+    flex-wrap: wrap;
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
+  .kpi-card {
+    padding: var(--spacing-4);
+  }
+  
   .data-table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  .dropdown-content {
+    min-width: 160px;
   }
 }
