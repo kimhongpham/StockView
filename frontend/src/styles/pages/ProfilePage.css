@@ -1,0 +1,360 @@
+.profile-page {
+  min-height: 100vh;
+    background-color: rgb(249 250 251);
+  padding: 2rem 0;
+}
+
+.dark .profile-page {
+    background-color: rgb(17 24 39);
+}
+
+.profile-container {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profile-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+.dark .profile-title {
+  color: white;
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background-color: rgb(243 244 246);
+  border-radius: 9999px;
+  margin-top: 0.5rem;
+}
+
+.dark .profile-badge {
+    background-color: rgb(55 65 81);
+}
+
+.badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+    background-color: rgb(156 163 175);
+  border-radius: 50%;
+}
+
+.badge-text {
+    font-size: 0.875rem;
+    color: rgb(107 114 128);
+}
+
+.dark .badge-text {
+    color: rgb(156 163 175);
+}
+
+.profile-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
+    border: 1px solid rgb(229 231 235);
+  overflow: hidden;
+}
+
+.dark .profile-card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.profile-section {
+  padding: 1.5rem;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+.dark .profile-section {
+  border-bottom-color: #374151;
+}
+
+.profile-section:last-of-type {
+  border-bottom: none;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+    color: rgb(55 65 81);
+  margin: 0;
+}
+
+.dark .section-label {
+  color: #d1d5db;
+}
+
+.edit-button {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.edit-button:hover {
+    color: rgb(29 78 216);
+}
+
+.profile-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  color: #111827;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.dark .profile-input {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+.profile-input:focus {
+  outline: none;
+    border-color: rgb(59 130 246);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 10%);
+}
+
+.profile-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox-indicator {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: white;
+  flex-shrink: 0;
+}
+
+.dark .checkbox-indicator {
+  border-color: #4b5563;
+  background-color: #374151;
+}
+
+.display-text {
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.dark .display-text {
+  color: white;
+}
+
+.phone-actions {
+  margin-top: 0.75rem;
+}
+
+.add-phone-button {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s;
+}
+
+.add-phone-button:hover {
+  color: #1d4ed8;
+}
+
+.password-section {
+  padding: 1.5rem;
+}
+
+.password-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.password-dots {
+  color: #111827;
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+}
+
+.dark .password-dots {
+  color: white;
+}
+
+.change-password-button {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.change-password-button:hover {
+  color: #1d4ed8;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.cancel-button {
+  padding: 0.5rem 1.5rem;
+    border: 1px solid rgb(209 213 219);
+  background-color: white;
+    color: rgb(55 65 81);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dark .cancel-button {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #d1d5db;
+}
+
+.cancel-button:hover {
+  background-color: #f9fafb;
+}
+
+.dark .cancel-button:hover {
+  background-color: #4b5563;
+}
+
+.save-button {
+  padding: 0.5rem 1.5rem;
+    background-color: rgb(37 99 235);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-button:hover {
+    background-color: rgb(29 78 216);
+}
+
+.update-info-section {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.update-info-button {
+  padding: 0.75rem 2rem;
+    background-color: rgb(37 99 235);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.update-info-button:hover {
+    background-color: rgb(29 78 216);
+}
+
+/* Responsive Design */
+@media (width <= 640px) {
+  .profile-page {
+    padding: 1rem 0;
+  }
+  
+  .profile-container {
+    padding: 0 0.5rem;
+  }
+  
+  .profile-section {
+    padding: 1rem;
+  }
+  
+  .password-section {
+    padding: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .cancel-button,
+  .save-button {
+    width: 100%;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .edit-button {
+    align-self: flex-end;
+  }
+}
+
+/* Animation for smooth transitions */
+.profile-card,
+.profile-input,
+.checkbox-indicator,
+.cancel-button,
+.save-button,
+.update-info-button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus states for accessibility */
+.edit-button:focus,
+.add-phone-button:focus,
+.change-password-button:focus,
+.cancel-button:focus,
+.save-button:focus,
+.update-info-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+
+/* Error state */

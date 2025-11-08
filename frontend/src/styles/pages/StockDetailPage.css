@@ -1,0 +1,795 @@
+/* StockDetailPage styles updated to use theme variables (supports light & dark) */
+.stock-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.stock-detail-container {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* Header Section */
+.stock-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  padding: 30px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+}
+
+.stock-title-section .stock-symbol {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.stock-exchange {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.company-name {
+  font-size: 1.25rem;
+  color: var(--text-color);
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.company-description {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.stock-price-section {
+  text-align: right;
+}
+
+.current-price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 8px;
+}
+
+.price-change {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.price-change.positive {
+  color: var(--positive-color);
+}
+
+.price-change.negative {
+  color: var(--negative-color);
+}
+
+.price-range {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+}
+
+.range-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.range-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.range-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 24px 30px;
+  background: var(--bg-color);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Company Info Section */
+.company-info-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  padding: 30px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-card {
+  background: var(--bg-color);
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.info-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 16px 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.info-value.link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.info-value.link:hover {
+  text-decoration: underline;
+}
+
+.watchlist-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  padding: 24px;
+  border-radius: 8px;
+  min-width: 160px;
+}
+
+.watchlist-count {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.count-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.count-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.watchlist-btn {
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.watchlist-btn:hover {
+  background: var(--primary-600);
+}
+
+/* Tabs Navigation */
+.tabs-navigation {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 30px;
+}
+
+.tab-btn {
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--text-color);
+  background: var(--hover-color);
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: var(--primary-100);
+}
+
+/* Tab Content */
+.tab-content {
+  padding: 30px;
+  min-height: 400px;
+}
+
+.overview-tab {
+  height: 100%;
+}
+
+.financials-tab h3,
+.news-tab h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 16px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 1.125rem;
+  color: var(--text-muted);
+}
+
+/* Thêm vào StockDetailPage.css */
+
+.error-message {
+  text-align: center;
+  padding: 40px;
+  color: var(--error-500);
+  font-size: 1.125rem;
+}
+
+.status.active {
+  color: var(--positive-color);
+  font-weight: 600;
+}
+
+.status.inactive {
+  color: var(--negative-color);
+  font-weight: 600;
+}
+
+.stats-details {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-color);
+  border-radius: 8px;
+}
+
+.stats-details h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-color);
+  font-size: 1.125rem;
+}
+
+.stats-grid-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.stats-grid-mini > div {
+  padding: 8px 12px;
+  background: var(--card-bg);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stock-detail-page {
+    padding: 12px;
+  }
+
+  .stock-header {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .stock-price-section {
+    text-align: left;
+  }
+
+  .price-range {
+    justify-content: space-between;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px 20px;
+  }
+
+  .company-info-section {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs-navigation {
+    padding: 0 20px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 12px 16px;
+    white-space: nowrap;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-symbol {
+    font-size: 2rem;
+  }
+
+  .current-price {
+    font-size: 2rem;
+  }
+}
+.stock-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.stock-detail-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header Section */
+.stock-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  padding: 30px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.stock-title-section .stock-symbol {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.stock-exchange {
+  font-size: 1.5rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.company-name {
+  font-size: 1.25rem;
+  color: #374151;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.company-description {
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.stock-price-section {
+  text-align: right;
+}
+
+.current-price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.price-change {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.price-change.positive {
+  color: #10b981;
+}
+
+.price-change.negative {
+  color: #ef4444;
+}
+
+.price-range {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+}
+
+.range-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.range-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.range-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 24px 30px;
+  background: #f8fafc;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Company Info Section */
+.company-info-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  padding: 30px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-card {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.info-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.info-value.link {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.info-value.link:hover {
+  text-decoration: underline;
+}
+
+.watchlist-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 8px;
+  min-width: 160px;
+}
+
+.watchlist-count {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.count-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.count-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.watchlist-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.watchlist-btn:hover {
+  background: #2563eb;
+}
+
+/* Tabs Navigation */
+.tabs-navigation {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 30px;
+}
+
+.tab-btn {
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #374151;
+  background: #f9fafb;
+}
+
+.tab-btn.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+/* Tab Content */
+.tab-content {
+  padding: 30px;
+  min-height: 400px;
+}
+
+.overview-tab {
+  height: 100%;
+}
+
+.financials-tab h3,
+.news-tab h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+/* Thêm vào StockDetailPage.css */
+
+.error-message {
+  text-align: center;
+  padding: 40px;
+  color: #ef4444;
+  font-size: 1.125rem;
+}
+
+.status.active {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.status.inactive {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.stats-details {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.stats-details h4 {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 1.125rem;
+}
+
+.stats-grid-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.stats-grid-mini > div {
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stock-detail-page {
+    padding: 12px;
+  }
+
+  .stock-header {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .stock-price-section {
+    text-align: left;
+  }
+
+  .price-range {
+    justify-content: space-between;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px 20px;
+  }
+
+  .company-info-section {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs-navigation {
+    padding: 0 20px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 12px 16px;
+    white-space: nowrap;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-symbol {
+    font-size: 2rem;
+  }
+
+  .current-price {
+    font-size: 2rem;
+  }
+}

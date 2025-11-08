@@ -1,4 +1,3 @@
-// data/mockData.ts
 interface Stock {
   code: string;
   name: string;

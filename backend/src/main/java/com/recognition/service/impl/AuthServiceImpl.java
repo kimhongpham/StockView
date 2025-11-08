@@ -34,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        // validate uniqueness
         if (userRepository.existsByEmail(request.getEmail())) {
             return new AuthResponse(false, "Email already in use", null, null);
         }
@@ -50,11 +49,11 @@ public class AuthServiceImpl implements AuthService {
         }
         user.setProvider(request.getProvider() == null ? "local" : request.getProvider());
         user.setProviderId(request.getProviderId());
+        user.setRole("user");
         user.setCreatedAt(OffsetDateTime.now());
         user.setUpdatedAt(OffsetDateTime.now());
         user = userRepository.save(user);
 
-        // Auto login after register: create token
         String token = jwtTokenProvider.createToken(user.getId(), user.getRole());
         return new AuthResponse(true, "Registered successfully", token, null);
     }

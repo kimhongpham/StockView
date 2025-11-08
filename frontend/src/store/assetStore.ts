@@ -8,7 +8,6 @@ import {
   deleteAsset,
 } from "../utils/api";
 
-// Kiểu dữ liệu cơ bản (có thể chỉnh lại nếu bạn đã định nghĩa trong /types)
 interface Asset {
   id: string;
   symbol: string;

@@ -30,3 +30,10 @@ export interface ChartPoint {
   close: number;
   volume: number;
 }
+
+export interface LatestPrice {
+  price: number;
+  changePercent: number;
+  volume?: number;
+  marketCap?: number;
+}

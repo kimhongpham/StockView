@@ -4,17 +4,30 @@ import com.recognition.entity.Users;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
+import java.security.Key;
 import java.util.Date;
 
 @Service
 public class JwtService {
 
-    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret:defaultSecretChangeMePleaseChangeInProd1234567890}")
+    private String jwtSecret;
 
-    private final long expirationMs = 86400000; // 1 ngày
+    @Value("${jwt.expirationMs:86400000}") // 1 ngày
+    private long expirationMs;
+
+    private Key key;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        if (jwtSecret.length() < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters long");
+        }
+        key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public String generateToken(Users user) {
         return Jwts.builder()
@@ -23,12 +36,11 @@ public class JwtService {
                 .claim("role", user.getRole())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(secretKey)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Nếu cần verify token
-    public SecretKey getSecretKey() {
-        return secretKey;
+    public Key getSecretKey() {
+        return key;
     }
 }

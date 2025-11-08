@@ -1,6 +1,5 @@
-import React from "react";
-import MiniChart from "./MiniChart";
-import StarButton from "./StarButton";
+import MiniChart from "../components/charts/MiniChart";
+import StarButton from "../components/common/StarButton";
 import { formatNumber, formatPrice, getChangeClass } from "../utils/format";
 
 const AssetRow = ({ asset, onClick, showChart, showStar }: any) => (
@@ -29,6 +28,7 @@ const AssetRow = ({ asset, onClick, showChart, showStar }: any) => (
     <td style={{ textAlign: "right" }}>{asset.pe?.toFixed(2) ?? "—"}</td>
     <td style={{ textAlign: "right" }}>{asset.pb?.toFixed(2) ?? "—"}</td>
 
+    {/* Biểu đồ 30D luôn render trước Yêu thích để khớp header */}
     {showChart && (
       <td style={{ width: 160 }}>
         {asset.chart30d?.length ? (
@@ -45,10 +45,9 @@ const AssetRow = ({ asset, onClick, showChart, showStar }: any) => (
         )}
       </td>
     )}
-
     {showStar && (
       <td style={{ textAlign: "center" }}>
-        <StarButton assetId={asset.id} />
+        <StarButton assetSymbol={asset.symbol} />
       </td>
     )}
   </tr>

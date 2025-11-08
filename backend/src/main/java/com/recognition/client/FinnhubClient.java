@@ -140,4 +140,27 @@ public class FinnhubClient {
             return null;
         }
     }
+
+    /**
+     * 🚀 Lấy giá cho toàn bộ danh sách symbol (gom 1 lần)
+     * Backend chỉ cần gọi 1 lần từ FE.
+     */
+    public Map<String, BigDecimal> fetchAllPrices(List<String> symbols) {
+        Map<String, BigDecimal> result = new java.util.concurrent.ConcurrentHashMap<>();
+
+        symbols.parallelStream().forEach(symbol -> {
+            try {
+                BigDecimal price = fetchPrice(symbol);
+                if (price != null) {
+                    result.put(symbol, price);
+                }
+                // Nếu sợ rate-limit, thêm delay nhẹ 100-150ms
+                // Thread.sleep(150);
+            } catch (Exception e) {
+                log.warn("Failed to fetch price for {}: {}", symbol, e.getMessage());
+            }
+        });
+
+        return result;
+    }
 }

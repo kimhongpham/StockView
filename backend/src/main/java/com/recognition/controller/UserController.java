@@ -1,81 +1,111 @@
 package com.recognition.controller;
 
-import com.recognition.dto.request.UpdateUserRequest;
 import com.recognition.dto.UserDTO;
+import com.recognition.dto.request.UpdateUserRequest;
 import com.recognition.dto.request.WatchlistRequest;
+import com.recognition.security.JwtTokenProvider;
 import com.recognition.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
- * User-related endpoints. Controllers do minimal work: pass to services.
+ * User-related endpoints (no UserDetailsImpl needed)
  */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserController(UserService userService) { this.userService = userService; }
+    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider) {
+        this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
-    /**
-     * GET /api/users/me
-     * Authentication principal holds userId (set in JwtAuthenticationFilter)
-     */
+    // ==========================
+    // LẤY THÔNG TIN NGƯỜI DÙNG HIỆN TẠI
+    // ==========================
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        UUID userId = (UUID) authentication.getPrincipal();
-        UserDTO dto = userService.getCurrentUser(userId);
-        return ResponseEntity.ok(buildResponse(true, "OK", dto));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable("id") UUID id,
-                                        @Valid @RequestBody UpdateUserRequest request,
-                                        Authentication authentication) {
-        // Could add authorization check: allow update only if same user or admin
-        UUID actor = (UUID) authentication.getPrincipal();
-        if (!actor.equals(id)) {
-            // simple check; expand with roles in real app
-            return ResponseEntity.status(403).body(buildResponse(false, "Forbidden", null));
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            UUID userId = jwtTokenProvider.getUserIdFromToken(token);
+            UserDTO dto = userService.getCurrentUser(userId);
+            return ResponseEntity.ok(buildResponse(true, "OK", dto));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(401).body(buildResponse(false, "Invalid or expired token", null));
         }
-        UserDTO updated = userService.updateUser(id, request);
-        return ResponseEntity.ok(buildResponse(true, "Updated", updated));
     }
 
-    // Watchlist: GET
+    // ==========================
+    // CẬP NHẬT NGƯỜI DÙNG HIỆN TẠI
+    // ==========================
+    @PutMapping("/me")
+    public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String authHeader,
+                                        @Valid @RequestBody UpdateUserRequest request) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            UUID userId = jwtTokenProvider.getUserIdFromToken(token);
+
+            UserDTO updated = userService.updateUser(userId, request);
+            return ResponseEntity.ok(buildResponse(true, "Updated", updated));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(401).body(buildResponse(false, "Invalid or expired token", null));
+        }
+    }
+
+    // ==========================
+    // WATCHLIST
+    // ==========================
     @GetMapping("/watchlist")
-    public ResponseEntity<?> getWatchlist(Authentication authentication) {
-        UUID userId = (UUID) authentication.getPrincipal();
-        List<String> list = userService.getWatchlist(userId);
-        return ResponseEntity.ok(buildResponse(true, "OK", list));
+    public ResponseEntity<?> getWatchlist(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            UUID userId = jwtTokenProvider.getUserIdFromToken(token);
+
+            List<String> list = userService.getWatchlist(userId);
+            return ResponseEntity.ok(buildResponse(true, "OK", list));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(buildResponse(false, "Invalid token", null));
+        }
     }
 
-    // Watchlist: POST (add)
     @PostMapping("/watchlist")
     public ResponseEntity<?> addWatchlist(@Valid @RequestBody WatchlistRequest request,
-                                          Authentication authentication) {
-        UUID userId = (UUID) authentication.getPrincipal();
-        userService.addWatchlist(userId, request.getSymbol());
-        return ResponseEntity.ok(buildResponse(true, "Added", null));
+                                          @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            UUID userId = jwtTokenProvider.getUserIdFromToken(token);
+
+            userService.addWatchlist(userId, request.getSymbol());
+            return ResponseEntity.ok(buildResponse(true, "Added", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(buildResponse(false, "Invalid token", null));
+        }
     }
 
-    // Watchlist: DELETE (remove)
     @DeleteMapping("/watchlist")
     public ResponseEntity<?> removeWatchlist(@Valid @RequestBody WatchlistRequest request,
-                                             Authentication authentication) {
-        UUID userId = (UUID) authentication.getPrincipal();
-        userService.removeWatchlist(userId, request.getSymbol());
-        return ResponseEntity.ok(buildResponse(true, "Removed", null));
+                                             @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            UUID userId = jwtTokenProvider.getUserIdFromToken(token);
+
+            userService.removeWatchlist(userId, request.getSymbol());
+            return ResponseEntity.ok(buildResponse(true, "Removed", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(buildResponse(false, "Invalid token", null));
+        }
     }
 
     private Object buildResponse(boolean success, String message, Object data) {
-        return new java.util.HashMap<>() {{
+        return new HashMap<>() {{
             put("success", success);
             put("message", message);
             put("data", data);

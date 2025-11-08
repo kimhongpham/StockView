@@ -309,14 +309,17 @@ public class PriceServiceImpl implements PriceService {
     @Transactional
     public Map<String, Object> fetchAndSaveAllPricesFromFinnhub() {
         List<Asset> assets = assetRepository.findByIsActiveTrue();
+        List<String> symbols = assets.stream().map(Asset::getSymbol).toList();
+
+        // 📦 Gọi 1 lần duy nhất để lấy toàn bộ giá
+        Map<String, BigDecimal> prices = finnhubClient.fetchAllPrices(symbols);
 
         int updated = 0;
         List<String> failed = new ArrayList<>();
 
         for (Asset asset : assets) {
             try {
-                BigDecimal price = finnhubClient.fetchPrice(asset.getSymbol());
-
+                BigDecimal price = prices.get(asset.getSymbol());
                 if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
                     failed.add(asset.getSymbol());
                     continue;
@@ -324,61 +327,38 @@ public class PriceServiceImpl implements PriceService {
 
                 OffsetDateTime timestamp = OffsetDateTime.now();
 
-                // Bỏ qua nếu timestamp = 0 hoặc null (do Finnhub trả sai)
-                if (timestamp == null || timestamp.toEpochSecond() == 0) {
-                    log.warn("Skipping invalid timestamp for asset {}", asset.getSymbol());
-                    continue;
-                }
-
-                // Tính phần trăm thay đổi so với giá trước đó
-                java.util.concurrent.atomic.AtomicReference<BigDecimal> changePercentRef = new java.util.concurrent.atomic.AtomicReference<>(null);
-                priceRepository.findTopByAssetOrderByTimestampDesc(asset).ifPresent(prev -> {
-                    BigDecimal prevPrice = prev.getPrice();
-                    if (prevPrice != null && prevPrice.compareTo(BigDecimal.ZERO) != 0) {
-                        BigDecimal diff = price.subtract(prevPrice);
-                        BigDecimal percent = diff.divide(prevPrice, 4, RoundingMode.HALF_UP)
+                // Tính phần trăm thay đổi
+                BigDecimal changePercent = null;
+                var prevOpt = priceRepository.findTopByAssetOrderByTimestampDesc(asset);
+                if (prevOpt.isPresent()) {
+                    BigDecimal prev = prevOpt.get().getPrice();
+                    if (prev != null && prev.compareTo(BigDecimal.ZERO) != 0) {
+                        BigDecimal diff = price.subtract(prev);
+                        changePercent = diff.divide(prev, 4, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(100));
-                        changePercentRef.set(percent);
                     }
-                });
-
-                // Kiểm tra xem bản ghi này đã tồn tại chưa
-                Optional<Price> existing = priceRepository.findByAssetAndTimestampAndSource(asset, timestamp, "Finnhub");
-
-                if (existing.isPresent()) {
-                    // Update bản ghi cũ
-                    Price existingPrice = existing.get();
-                    existingPrice.setPrice(price);
-                    existingPrice.setChangePercent(changePercentRef.get());
-                    priceRepository.save(existingPrice);
-                    log.info("Updated existing price for asset {} at {}", asset.getSymbol(), timestamp);
-                } else {
-                    // Tạo bản ghi mới
-                    Price record = Price.builder()
-                            .asset(asset)
-                            .price(price)
-                            .timestamp(timestamp)
-                            .source("Finnhub")
-                            .changePercent(changePercentRef.get())
-                            .build();
-
-                    priceRepository.save(record);
-                    log.info("Inserted new price for asset {} at {}", asset.getSymbol(), timestamp);
                 }
 
+                // Lưu giá mới
+                Price record = Price.builder()
+                        .asset(asset)
+                        .price(price)
+                        .timestamp(timestamp)
+                        .source("Finnhub")
+                        .changePercent(changePercent)
+                        .build();
+
+                priceRepository.save(record);
                 updated++;
 
-                // tránh bị rate-limit API (60 requests/phút)
-                Thread.sleep(1000);
-
-            } catch (Exception ex) {
-                log.warn("Failed to fetch or save price for {}: {}", asset.getSymbol(), ex.getMessage());
+            } catch (Exception e) {
+                log.warn("Failed to save price for {}: {}", asset.getSymbol(), e.getMessage());
                 failed.add(asset.getSymbol());
             }
         }
 
         return Map.of(
-                "message", "Fetched and saved all asset prices from Finnhub successfully.",
+                "message", "Fetched all prices in one call",
                 "totalAssets", assets.size(),
                 "updated", updated,
                 "failed", failed

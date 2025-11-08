@@ -18,6 +18,8 @@ public class UpdateUserRequest {
 
     @Size(max = 255)
     private String avatarUrl;
+    private String username;
+    private String email;
 
     // getters / setters
     public String getFirstName() { return firstName; }
@@ -28,4 +30,8 @@ public class UpdateUserRequest {
     public void setTimezone(String timezone) { this.timezone = timezone; }
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }

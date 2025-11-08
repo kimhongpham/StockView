@@ -1,0 +1,131 @@
+/* ===== DASHBOARD STYLES ===== */
+
+#dashboard {
+  background: linear-gradient(135deg, rgb(248 250 252) 0%, rgb(241 245 249) 100%);
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* Main Content Grid */
+
+/* Time Period Filters */
+
+/* Chart Time Filters */
+
+/* Market Indices Grid */
+
+/* Loading States */
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive Design */
+@media (width <= 1200px) {
+  .page-title {
+    font-size: 2rem;
+  }
+}
+
+@media (width <= 768px) {
+  #dashboard {
+    padding: 16px;
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+  }
+}
+
+@media (width <= 480px) {
+  #dashboard {
+    padding: 12px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #dashboard {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: var(--text-color);
+  }
+}
+
+/* Also support class-based dark mode toggle (e.g. .dark-mode on <body>) */
+.dark-mode #dashboard {
+  background: linear-gradient(135deg, rgb(15, 23, 42) 0%, rgb(30, 41, 59) 100%);
+  color: var(--text-color);
+}
+
+/* Dark-mode: cards, charts, filters, tables and loading states */
+.dark-mode #dashboard .card,
+.dark-mode #dashboard .kpi-card,
+.dark-mode #dashboard .info-card,
+.dark-mode #dashboard .profile-card,
+.dark-mode #dashboard .stat-card {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.dark-mode #dashboard .page-content,
+.dark-mode #dashboard .market-indices,
+.dark-mode #dashboard .chart-section {
+  color: var(--text-secondary);
+}
+
+.dark-mode #dashboard .filters,
+.dark-mode #dashboard .time-filters,
+.dark-mode #dashboard .time-filter-btn {
+  background: transparent;
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode #dashboard .asset-table,
+.dark-mode #dashboard table {
+  color: var(--text-color);
+}
+
+.dark-mode .mini-chart,
+.dark-mode .chart-canvas {
+  background: transparent;
+}
+
+/* Loading / skeleton states: use darker shimmer */
+.dark-mode .loading-skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%);
+  background-size: 200% 100%;
+  animation: loading 1.2s linear infinite;
+}
+
+/* small utility adjustments for better contrast */
+.dark-mode a,
+.dark-mode .link {
+  color: var(--primary-color);
+}
+
+.dark-mode .muted {
+  color: var(--text-muted);
+}
+
+/* Fallback for prefers-color-scheme when variables are provided */
+@media (prefers-color-scheme: dark) {
+  #dashboard .card,
+  #dashboard .kpi-card,
+  #dashboard .info-card,
+  #dashboard .profile-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+  }
+}

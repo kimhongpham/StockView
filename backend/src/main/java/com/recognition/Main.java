@@ -3,11 +3,13 @@ package com.recognition;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @SpringBootApplication
+@EnableAsync
 public class Main {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure()
@@ -24,4 +26,3 @@ public class Main {
         app.run(args);
     }
 }
-

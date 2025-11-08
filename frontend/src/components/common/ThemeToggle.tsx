@@ -1,13 +1,12 @@
 import React from 'react'
 import { useUIStore } from '../../store/uiStore'
-import { Sun, Moon, LineChart } from 'lucide-react' // lucide-react icons
+import { Sun, Moon } from 'lucide-react'
 
 export const ThemeToggle: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useUIStore()
 
   const handleToggle = () => {
     toggleDarkMode()
-    document.body.classList.toggle('dark-mode', !isDarkMode)
   }
 
   return (

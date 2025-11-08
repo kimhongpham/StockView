@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:defaultSecretChangeMePleaseChangeInProd123456}")
+    @Value("${jwt.secret:defaultSecretChangeMePleaseChangeInProd1234567890}")
     private String jwtSecret;
 
     @Value("${jwt.expirationMs:86400000}") // 1 day default

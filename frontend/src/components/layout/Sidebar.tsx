@@ -1,52 +1,87 @@
-import React from 'react';
-import { useAuthStore } from '../../store/authStore';
+import { forwardRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
   activePage: string;
   onPageChange: (page: string) => void;
   isLoggedIn: boolean;
   isActive: boolean;
+  isCollapsed: boolean;
+  onToggle: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  activePage, 
-  onPageChange, 
-  isLoggedIn,
-  isActive 
-}) => {
-  const menuItems = [
-    { id: 'dashboard', icon: 'fas fa-chart-line', label: 'Thị Trường', premium: false },
-    { id: 'stock', icon: 'fas fa-chart-bar', label: 'Danh Mục Quan Sát', premium: false },
-    { id: 'favorit', icon: 'fas fa-star', label: 'Đang Theo Dõi', premium: false },
-    { id: 'wallet', icon: 'fas fa-wallet', label: 'Danh Mục Đầu Tư', premium: false },
-    { id: 'profile', icon: 'fas fa-user', label: 'Hồ Sơ', premium: false },
-    { id: 'admin', icon: 'fas fa-cog', label: 'Quản Trị', premium: false },
-  ];
+export const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
+  ({ activePage, onPageChange, isLoggedIn, isActive, isCollapsed, onToggle }, ref) => {
+    const menuItems = [
+      { id: 'dashboard', icon: 'fas fa-chart-line', label: 'Thị Trường', premium: false },
+      { id: 'stock', icon: 'fas fa-chart-bar', label: 'Danh Mục Quan Sát', premium: false },
+      { id: 'favorit', icon: 'fas fa-star', label: 'Đang Theo Dõi', premium: false },
+      { id: 'wallet', icon: 'fas fa-wallet', label: 'Danh Mục Đầu Tư', premium: true },
+      { id: 'profile', icon: 'fas fa-user', label: 'Hồ Sơ', premium: false },
+      { id: 'admin', icon: 'fas fa-cog', label: 'Quản Trị', premium: false },
+    ];
 
-  const handleItemClick = (pageId: string) => {
-    onPageChange(pageId);
-  };
+    const filteredMenuItems = menuItems.filter(item => {
+      if (item.premium && !isLoggedIn) return false;
+      return true;
+    });
 
-  const filteredMenuItems = menuItems.filter(item => {
-    if (item.premium && !isLoggedIn) return false;
-    return true;
-  });
-
-  return (
-    <nav className={`sidebar ${isActive ? 'active' : ''}`} aria-label="Main navigation">
-      <div className="logo">StockView</div>
-      <ul className="sidebar-menu">
-        {filteredMenuItems.map((item) => (
-          <li
-            key={item.id}
-            className={`${activePage === item.id ? 'active' : ''} ${item.premium ? 'premium-feature' : ''}`}
-            data-page={item.id}
-            onClick={() => handleItemClick(item.id)}
+    return (
+      <nav
+        ref={ref}
+        className={`sidebar ${isActive ? 'active' : ''} ${isCollapsed ? 'collapsed' : ''}`}
+        aria-label="Main navigation"
+      >
+        {/* Logo chỉ hiển thị ở màn hình md trở lên */}
+        <div className="sidebar-header hidden md:flex items-center justify-between px-3 py-2">
+          <div className="logo flex items-center gap-2">
+            <img
+              src="/logo.png"
+              alt="StockView Logo"
+              className="h-8 w-8 object-contain"
+            />
+            {!isCollapsed && <span className="font-semibold text-lg">StockView</span>}
+            {isCollapsed && <span className="font-semibold text-lg">SV</span>}
+          </div>
+          <button
+            className="sidebar-toggle"
+            onClick={onToggle}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <i className={item.icon}></i> {item.label}
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-};
+            {isCollapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronLeft className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Menu chính */}
+        <ul className="sidebar-menu">
+          {filteredMenuItems.map((item) => (
+            <li
+              key={item.id}
+              className={`menu-item ${activePage === item.id ? 'active' : ''} ${item.premium ? 'premium-feature' : ''}`}
+              data-page={item.id}
+              onClick={() => onPageChange(item.id)}
+              title={isCollapsed ? item.label : undefined}
+            >
+              <i className={item.icon}></i>
+              {!isCollapsed && <span className="menu-label">{item.label}</span>}
+              {item.premium && !isCollapsed && <span className="premium-badge">PRO</span>}
+            </li>
+          ))}
+        </ul>
+
+        {!isCollapsed && (
+          <div className="sidebar-footer">
+            <div className="user-status">
+              <div className="status-indicator online"></div>
+              <span>Đang hoạt động</span>
+            </div>
+          </div>
+        )}
+      </nav>
+    );
+  }
+);

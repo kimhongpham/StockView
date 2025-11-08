@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/actuator/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // 🔒 chỉ admin
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -47,7 +48,10 @@ public class SecurityConfig {
                         .anyRequest().permitAll() // 👈 Mở toàn bộ API, không cần xác thực
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/auth/oauth2/success", true)
+                        .successHandler((request, response, authentication) -> {
+                            // Redirect trực tiếp tới endpoint backend
+                            response.sendRedirect("/auth/oauth2/success");
+                        })
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                 )
                 .formLogin(form -> form.permitAll())

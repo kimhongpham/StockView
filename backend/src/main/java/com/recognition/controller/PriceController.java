@@ -6,6 +6,7 @@ import com.recognition.dto.response.StatisticsDTO;
 import com.recognition.dto.response.PriceResponse;
 import com.recognition.entity.Price;
 import com.recognition.exception.InvalidSortPropertyException;
+import com.recognition.service.AsyncPriceService;
 import com.recognition.service.PriceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,6 +41,7 @@ import java.util.*;
 public class PriceController {
 
     private final PriceService priceService;
+    private final AsyncPriceService asyncPriceService;
 
     @GetMapping("/{assetId}/latest")
     public ResponseEntity<PriceDto> getLatestPrice(@PathVariable UUID assetId) {
@@ -66,9 +68,20 @@ public class PriceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(fetchedPrice);
     }
 
-    @PostMapping("/fetch-all")
-    public ResponseEntity<?> fetchAllPrices() {
-        return ResponseEntity.ok(priceService.fetchAndSaveAllPricesFromFinnhub());
+    // Khởi tạo job async
+    @PostMapping("/fetch-all/start")
+    public ResponseEntity<?> startFetchAll() {
+        String jobId = asyncPriceService.startJob();
+        return ResponseEntity.ok(Map.of(
+                "message", "Price update job started",
+                "jobId", jobId
+        ));
+    }
+
+    // Kiểm tra tiến độ
+    @GetMapping("/fetch-all/status/{jobId}")
+    public ResponseEntity<?> getStatus(@PathVariable String jobId) {
+        return ResponseEntity.ok(asyncPriceService.getJobStatus(jobId));
     }
 
     @GetMapping("/{assetId}/history/paged")

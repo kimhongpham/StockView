@@ -3,7 +3,7 @@ import axios from "axios";
 // Axios instance
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
-  timeout: 30000, // 30s
+  timeout: 120000, // 120s = 2 phút
 });
 
 // Types
@@ -40,6 +40,33 @@ export interface StatsResponse {
   [k: string]: any;
 }
 
+export interface AssetOverview {
+  id: string;
+  symbol: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  currentPrice: number;
+  volume: number | null;
+  changePercent: number;
+  peRatio: number | null;
+  pbRatio: number | null;
+  high24h: number | null;
+  low24h: number | null;
+  marketCap: number | null;
+  timestamp: string;
+  source: string;
+}
+
+export interface CandleDTO {
+  timestamp: string | number | null;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
+}
+
 // ----------------- API functions -----------------
 // Dash board APIs
 // Lấy giá mới nhất
@@ -73,26 +100,36 @@ export async function fetchTopPrices(type: "gainers" | "losers", limit = 5) {
 
 // Stock Page APIs
 //Lấy tổng quan tài sản (Asset + Company + Metrics + Price)
-export async function fetchAssetOverview(symbol: string) {
-  const res = await fetch(`/assets/${symbol}/overview`);
-  if (!res.ok) throw new Error("Failed to fetch asset overview");
-  const data = await res.json();
-  return data; 
+export async function fetchAssetOverview(symbol: string): Promise<AssetOverview> {
+  try {
+    const response = await api.get(`/assets/${symbol}/overview`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching asset overview:', error);
+    throw error;
+  }
 }
 
 //Lấy lịch sử giá (30 ngày gần nhất)
 export async function fetchPriceHistory(assetId: string, limit = 30) {
-  const res = await fetch(`/api/prices/${assetId}/history/paged?page=0&size=${limit}`);
-  if (!res.ok) throw new Error("Failed to fetch price history");
-  return res.json();
+  try {
+    const response = await api.get(`/prices/${assetId}/history/paged?page=0&size=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching price history:', error);
+    throw error;
+  }
 }
 
 //Lấy thống kê giá (min, max, avg, YTD)
 export async function fetchPriceStats(assetId: string, range = "month") {
-  const res = await fetch(`/prices/${assetId}/stats?range=${range}`);
-  if (!res.ok) throw new Error("Failed to fetch price stats");
-  const data = await res.json();
-  return data.data;
+  try {
+    const response = await api.get(`/prices/${assetId}/stats?range=${range}`);
+    return response.data.data || response.data;
+  } catch (error) {
+    console.error('Error fetching price stats:', error);
+    throw error;
+  }
 }
 
 // StockDetailPage APIs
@@ -138,8 +175,13 @@ export async function fetchAndSaveAssetPrice(assetId: string) {
 // ========== ADMIN APIs ==========
 
 // Cập nhật giá cho tất cả asset (admin/system)
-export const fetchAndSaveAllPrices = async () => {
-  const res = await api.post(`/prices/fetch-all`);
+export const startFetchAllPrices = async () => {
+  const res = await api.post(`/prices/fetch-all/start`);
+  return res.data; // { jobId, message }
+};
+
+export const getFetchAllStatus = async (jobId: string) => {
+  const res = await api.get(`/prices/fetch-all/status/${jobId}`);
   return res.data;
 };
 
@@ -164,3 +206,31 @@ export async function fetchChange(assetId: string, hours = 168): Promise<ChangeR
   });
   return resp.data;
 }
+
+// Thêm biến API_URL dùng chung cho watchlist
+const API_URL = "http://localhost:8080/api/users";
+
+// ================= Watchlist APIs =================
+export const getWatchlist = async (token: string) => {
+  const res = await axios.get(`${API_URL}/watchlist`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data; // giả sử backend trả về array symbol
+};
+
+export const addToWatchlist = async (symbol: string, token: string) => {
+  await axios.post(
+    `${API_URL}/watchlist`,
+    { symbol },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
+
+export const removeFromWatchlist = async (symbol: string, token: string) => {
+  await axios.delete(`${API_URL}/watchlist`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { symbol },
+  });
+};
+
+export default api;

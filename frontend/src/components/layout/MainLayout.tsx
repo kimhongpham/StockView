@@ -20,6 +20,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onLogout,
 }) => {
   const [sidebarActive, setSidebarActive] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const { isLoggedIn } = useAuthStore()
   const { isDarkMode } = useUIStore()
   const sidebarRef = useRef<HTMLDivElement>(null)
@@ -41,12 +42,28 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     return () => document.removeEventListener('click', handleClickOutside)
   }, [sidebarActive])
 
+  // Auto-collapse sidebar on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 1024) {
+        setIsCollapsed(true)
+      } else {
+        setIsCollapsed(false)
+      }
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Sync dark mode with body
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode)
   }, [isDarkMode])
 
   const handleMenuToggle = () => setSidebarActive(!sidebarActive)
+  const handleSidebarToggle = () => setIsCollapsed(!isCollapsed)
 
   const handlePageChange = (page: string) => {
     onPageChange(page)
@@ -61,13 +78,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onPageChange={handlePageChange}
         isLoggedIn={isLoggedIn}
         isActive={sidebarActive}
+        isCollapsed={isCollapsed}
+        onToggle={handleSidebarToggle}
       />
-      <Header
-        onLoginClick={onLoginClick}
-        onMenuToggle={handleMenuToggle}
-        onLogout={onLogout}
-      />
-      <main className="main-content">{children}</main>
+      <div className={`layout-content ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Header
+          onLoginClick={onLoginClick}
+          onMenuToggle={handleMenuToggle}
+          onLogout={onLogout}
+        />
+        <main className="main-content">
+          <div className="content-wrapper">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

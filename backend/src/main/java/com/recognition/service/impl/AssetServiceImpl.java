@@ -39,7 +39,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public Map<String, Object> getAssetOverview(String code) {
-        // 1️⃣ Tìm asset trong DB
+        // Tìm asset trong DB
         Asset asset;
         if (code.matches("^[0-9a-fA-F\\-]{36}$")) {
             asset = assetRepository.findById(UUID.fromString(code))
@@ -49,7 +49,7 @@ public class AssetServiceImpl implements AssetService {
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found (symbol): " + code));
         }
 
-        // 2️⃣ Tạo map kết quả cơ bản
+        // Tạo map kết quả cơ bản
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", asset.getId());
         result.put("symbol", asset.getSymbol());
@@ -59,7 +59,7 @@ public class AssetServiceImpl implements AssetService {
         result.put("createdAt", asset.getCreatedAt());
         result.put("updatedAt", asset.getUpdatedAt());
 
-        // 3️⃣ Lấy bản ghi giá mới nhất
+        // Lấy bản ghi giá mới nhất
         Price latestPrice = priceRepository
                 .findTopByAssetOrderByTimestampDesc(asset)
                 .orElse(null);
@@ -137,7 +137,7 @@ public class AssetServiceImpl implements AssetService {
                                 .build()
                 ));
 
-        // 🔹 Xử lý timestamp hợp lệ
+        // Xử lý timestamp hợp lệ
         long ts = ((Number) quote.get("t")).longValue();
         if (ts == 0) {
             log.warn("Skipping invalid timestamp (0) for {}", symbol);
@@ -146,7 +146,7 @@ public class AssetServiceImpl implements AssetService {
 
         OffsetDateTime timestamp = OffsetDateTime.ofInstant(Instant.ofEpochSecond(ts), ZoneOffset.UTC);
 
-        // 🔹 Kiểm tra trùng khóa
+        // Kiểm tra trùng khóa
         Optional<Price> existing = priceRepository.findByAssetAndTimestampAndSource(asset, timestamp, "Finnhub");
         if (existing.isPresent()) {
             log.info("Price already exists for {} at {}, skipping.", symbol, timestamp);

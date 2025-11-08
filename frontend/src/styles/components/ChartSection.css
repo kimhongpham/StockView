@@ -1,0 +1,284 @@
+/* ChartSection.module.css */
+.chartSection {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Inter", sans-serif;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chartTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.timeRangeSelector {
+  display: flex;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.timeRangeBtn {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timeRangeBtn:hover:not(:disabled) {
+  background: #e9ecef;
+  color: #333;
+}
+
+.timeRangeBtn.active {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+.timeRangeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chartContainer {
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+
+.chartWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.chartLoading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #666;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.chartError {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #dc3545;
+}
+
+.retryBtn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.retryBtn:hover {
+  background: #45a049;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.chart-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Inter", sans-serif;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+.time-range-selector {
+  display: flex;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 4px;
+  border-radius: 8px;
+}
+.time-range-btn {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.time-range-btn:hover:not(:disabled) {
+  background: #e9ecef;
+  color: #333;
+}
+.time-range-btn.active {
+  background: #4caf50;
+  color: #fff;
+}
+.time-range-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+.chart-wrapper {
+  width: 100%;
+  height: 350px; /* quan trọng: phải > 0 */
+  position: relative;
+}
+.chart-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #666;
+}
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.chart-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #dc3545;
+}
+.chart-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #666;
+}
+.retry-btn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.retry-btn:hover {
+  background: #45a049;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 768px) {
+  .chart-section {
+    padding: 16px;
+  }
+  .chart-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .time-range-selector {
+    justify-content: space-between;
+  }
+  .time-range-btn {
+    flex: 1;
+    text-align: center;
+  }
+  .chart-container {
+    height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chartSection {
+    padding: 16px;
+  }
+
+  .chartHeader {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .timeRangeSelector {
+    justify-content: space-between;
+  }
+
+  .timeRangeBtn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .chartContainer {
+    height: 300px;
+  }
+}

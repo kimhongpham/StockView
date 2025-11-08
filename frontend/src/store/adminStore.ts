@@ -1,4 +1,3 @@
-// src/store/adminStore.ts
 import { create } from "zustand";
 import { fetchAllAssets, deleteAsset } from "../utils/api";
 import { Asset } from "../utils/api";

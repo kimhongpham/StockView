@@ -64,10 +64,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO updateUser(UUID id, UpdateUserRequest request) {
         Users user = findByIdOrThrow(id);
+
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getTimezone() != null) user.setTimezone(request.getTimezone());
         if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
+
+        // Mới thêm từ frontend
+        if (request.getUsername() != null) user.setUsername(request.getUsername());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+
         user.setUpdatedAt(java.time.OffsetDateTime.now());
         userRepository.save(user);
         return toDto(user);
