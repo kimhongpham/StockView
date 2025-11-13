@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 interface SidebarProps {
   activePage: string;
@@ -12,17 +13,30 @@ interface SidebarProps {
 
 export const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
   ({ activePage, onPageChange, isLoggedIn, isActive, isCollapsed, onToggle }, ref) => {
-    const menuItems = [
-      { id: 'dashboard', icon: 'fas fa-chart-line', label: 'Thị Trường', premium: false },
-      { id: 'stock', icon: 'fas fa-chart-bar', label: 'Danh Mục Quan Sát', premium: false },
-      { id: 'favorit', icon: 'fas fa-star', label: 'Đang Theo Dõi', premium: false },
-      { id: 'wallet', icon: 'fas fa-wallet', label: 'Danh Mục Đầu Tư', premium: true },
-      { id: 'profile', icon: 'fas fa-user', label: 'Hồ Sơ', premium: false },
-      { id: 'admin', icon: 'fas fa-cog', label: 'Quản Trị', premium: false },
+    const { user } = useAuthStore();
+
+    const allMenuItems = [
+      { id: 'dashboard', icon: 'fas fa-chart-line', label: 'Thị Trường', premium: false, roles: ['guest', 'user', 'admin'] },
+      { id: 'stock', icon: 'fas fa-chart-bar', label: 'Danh Mục Quan Sát', premium: false, roles: ['guest', 'user'] },
+      { id: 'favorit', icon: 'fas fa-star', label: 'Đang Theo Dõi', premium: false, roles: ['user'] },
+      { id: 'wallet', icon: 'fas fa-wallet', label: 'Danh Mục Đầu Tư', premium: true, roles: ['user'] },
+      { id: 'profile', icon: 'fas fa-user', label: 'Hồ Sơ', premium: false, roles: ['user'] },
+      { id: 'admin', icon: 'fas fa-cog', label: 'Quản Trị', premium: false, roles: ['admin'] },
     ];
 
-    const filteredMenuItems = menuItems.filter(item => {
+    const filteredMenuItems = allMenuItems.filter(item => {
+      // If not logged in, only show guest accessible items
+      if (!isLoggedIn) {
+        return item.roles.includes('guest');
+      }
+
+      // Check role access
+      const userRole = user?.role?.toLowerCase() || 'user';
+      if (!item.roles.includes(userRole)) return false;
+      
+      // Check premium access
       if (item.premium && !isLoggedIn) return false;
+      
       return true;
     });
 

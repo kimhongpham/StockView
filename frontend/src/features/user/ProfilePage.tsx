@@ -109,7 +109,6 @@ const ProfilePage: React.FC = () => {
               />
             ) : (
               <div className="profile-display">
-                <div className="checkbox-indicator" />
                 <span className="display-text">{displayName}</span>
               </div>
             )}
@@ -127,7 +126,6 @@ const ProfilePage: React.FC = () => {
               />
             ) : (
               <div className="profile-display">
-                <div className="checkbox-indicator" />
                 <span className="display-text">{email}</span>
               </div>
             )}
@@ -137,7 +135,6 @@ const ProfilePage: React.FC = () => {
           <div className="password-section">
             <label className="section-label">Mật khẩu</label>
             <div className="password-display">
-              <div className="checkbox-indicator" />
               <span className="password-dots">••••••••</span>
             </div>
             <button className="change-password-button">Đổi mật khẩu</button>

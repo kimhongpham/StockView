@@ -1,7 +1,7 @@
 import React from "react";
-import MiniChart from "../components/charts/MiniChart";
 import StarButton from "../components/common/StarButton";
-import { formatNumber, formatPrice, getChangeClass } from "../utils/format";
+import MiniChart from "../components/charts/MiniChart";
+import { formatPrice, getChangeClass } from "../utils/format";
 
 interface AssetRowProps {
   asset: {
@@ -13,14 +13,18 @@ interface AssetRowProps {
     volume?: number;
     pe?: number | null;
     pb?: number | null;
-    chart30d?: number[];
   };
   onClick?: () => void;
   showChart?: boolean;
   showStar?: boolean;
 }
 
-const AssetRow: React.FC<AssetRowProps> = ({ asset, onClick, showChart, showStar }) => (
+const AssetRow: React.FC<AssetRowProps> = ({
+  asset,
+  onClick,
+  showChart,
+  showStar,
+}) => (
   <tr className="asset-row" onClick={onClick}>
     {/* Cột: Mã & Tên */}
     <td className="asset-info-cell">
@@ -30,9 +34,7 @@ const AssetRow: React.FC<AssetRowProps> = ({ asset, onClick, showChart, showStar
 
     {/* Cột: Giá hiện tại */}
     <td className="price-cell">
-      <div className="price-value">
-        {formatPrice(asset.latestPrice ?? 0)}
-      </div>
+      <div className="price-value">{formatPrice(asset.latestPrice ?? 0)}</div>
     </td>
 
     {/* Cột: Biến động % (24h) */}
@@ -44,16 +46,10 @@ const AssetRow: React.FC<AssetRowProps> = ({ asset, onClick, showChart, showStar
       </div>
     </td>
 
-    {/* Cột: Biểu đồ 30D */}
+    {/* Cột: MiniChart 30D */}
     {showChart && (
-      <td className="chart-cell">
-        {asset.chart30d?.length ? (
-          <MiniChart data={asset.chart30d} />
-        ) : (
-          <div className="chart-placeholder">
-            <span>No data</span>
-          </div>
-        )}
+      <td className="chart-cell" style={{ width: 100, height: 60 }}>
+        <MiniChart assetId={asset.id} limit={30} height={60} />
       </td>
     )}
 

@@ -9,7 +9,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -38,19 +37,19 @@ public class FinnhubClient {
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
             if (response.getBody() == null || response.getBody().get("c") == null) {
-                log.warn("⚠️ No price found for symbol: {}", symbol);
+                log.warn(" No price found for symbol: {}", symbol);
                 return null;
             }
 
             BigDecimal price = new BigDecimal(response.getBody().get("c").toString());
             if (price.compareTo(BigDecimal.ZERO) <= 0) {
-                log.warn("⚠️ Invalid price value ({}) for symbol: {}", price, symbol);
+                log.warn(" Invalid price value ({}) for symbol: {}", price, symbol);
                 return null;
             }
 
             return price;
         } catch (Exception e) {
-            log.error("❌ Error fetching price for {}: {}", symbol, e.getMessage());
+            log.error(" Error fetching price for {}: {}", symbol, e.getMessage());
             return null;
         }
     }
@@ -66,7 +65,7 @@ public class FinnhubClient {
             ResponseEntity<List> response = restTemplate.getForEntity(url, List.class);
             return response.getBody();
         } catch (Exception e) {
-            log.error("❌ Error fetching market symbols for exchange {}: {}", exchange, e.getMessage());
+            log.error(" Error fetching market symbols for exchange {}: {}", exchange, e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -81,7 +80,7 @@ public class FinnhubClient {
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
             return (Map<String, Object>) response.getBody().get("metric");
         } catch (Exception e) {
-            log.warn("⚠️ Failed to fetch metrics for {}: {}", symbol, e.getMessage());
+            log.warn(" Failed to fetch metrics for {}: {}", symbol, e.getMessage());
             return Collections.emptyMap();
         }
     }
@@ -97,13 +96,13 @@ public class FinnhubClient {
         try {
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
             if (response == null || response.get("v") == null) {
-                log.warn("⚠️ No volume found for symbol: {}", symbol);
+                log.warn(" No volume found for symbol: {}", symbol);
                 return null;
             }
 
             return new BigDecimal(response.get("v").toString());
         } catch (Exception e) {
-            log.error("❌ Error fetching volume for {}: {}", symbol, e.getMessage());
+            log.error(" Error fetching volume for {}: {}", symbol, e.getMessage());
             return null;
         }
     }
@@ -130,9 +129,9 @@ public class FinnhubClient {
                         if (price != null) {
                             result.put(symbol, price);
                         }
-                        Thread.sleep(100); // delay nhẹ để tránh rate-limit
+                        Thread.sleep(100);
                     } catch (Exception ex) {
-                        log.warn("⚠️ Failed to fetch price for {}: {}", symbol, ex.getMessage());
+                        log.warn(" Failed to fetch price for {}: {}", symbol, ex.getMessage());
                     }
                 }));
             }
@@ -141,18 +140,18 @@ public class FinnhubClient {
                 try {
                     f.get(15, TimeUnit.SECONDS); // timeout riêng từng tác vụ
                 } catch (TimeoutException e) {
-                    log.warn("⏱ Timeout fetching one of symbols");
+                    log.warn(" Timeout fetching one of symbols");
                 }
             }
 
         } catch (Exception e) {
-            log.error("❌ Error in fetchAllPrices: {}", e.getMessage());
+            log.error(" Error in fetchAllPrices: {}", e.getMessage());
         } finally {
             executor.shutdown();
         }
 
         long duration = System.currentTimeMillis() - startTime;
-        log.info("✅ fetchAllPrices completed for {} symbols in {} ms", symbols.size(), duration);
+        log.info(" fetchAllPrices completed for {} symbols in {} ms", symbols.size(), duration);
 
         return result;
     }

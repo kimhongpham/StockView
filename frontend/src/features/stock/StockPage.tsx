@@ -267,7 +267,7 @@ const StockPage: React.FC = () => {
               <FilterInput
                 label="Mã cổ phiếu"
                 value={symbolFilter}
-                onChange={(v) => {
+                onChange={(v: string) => {
                   setSymbolFilter(v);
                   setPage(1);
                 }}
@@ -276,7 +276,7 @@ const StockPage: React.FC = () => {
               <FilterInput
                 label="Tên công ty"
                 value={nameFilter}
-                onChange={(v) => {
+                onChange={(v: string) => {
                   setNameFilter(v);
                   setPage(1);
                 }}

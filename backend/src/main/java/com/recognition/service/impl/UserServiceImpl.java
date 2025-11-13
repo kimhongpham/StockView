@@ -69,8 +69,6 @@ public class UserServiceImpl implements UserService {
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getTimezone() != null) user.setTimezone(request.getTimezone());
         if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
-
-        // Mới thêm từ frontend
         if (request.getUsername() != null) user.setUsername(request.getUsername());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
 

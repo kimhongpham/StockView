@@ -31,7 +31,7 @@ const AssetTable: React.FC<AssetTableProps> = ({
             <div className="header-content">
               <span>Cổ phiếu</span>
               {sortBy === "symbol" && (
-                <SortIcon direction={sortOrder} />
+                <SortIcon direction={sortOrder ?? "asc"} />
               )}
             </div>
           </th>
@@ -42,7 +42,7 @@ const AssetTable: React.FC<AssetTableProps> = ({
             <div className="header-content">
               <span>Giá hiện tại</span>
               {sortBy === "latestPrice" && (
-                <SortIcon direction={sortOrder} />
+                <SortIcon direction={sortOrder ?? "asc"} />
               )}
             </div>
           </th>
@@ -53,7 +53,7 @@ const AssetTable: React.FC<AssetTableProps> = ({
             <div className="header-content">
               <span>Biến động % (24h)</span>
               {sortBy === "change24h" && (
-                <SortIcon direction={sortOrder} />
+                <SortIcon direction={sortOrder ?? "asc"} />
               )}
             </div>
           </th>

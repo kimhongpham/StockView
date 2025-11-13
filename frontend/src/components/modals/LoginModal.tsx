@@ -90,7 +90,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    const frontendRedirect = encodeURIComponent(
+      `${window.location.origin}/auth/oauth2/success`
+    );
+    const url = `http://localhost:8080/oauth2/authorization/google?redirect_uri=${frontendRedirect}`;
+    window.location.href = url;
   };
 
   const handleForgotPassword = (e: React.MouseEvent) => {

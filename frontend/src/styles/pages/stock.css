@@ -76,20 +76,20 @@
 }
 
 .asset-row:hover {
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.04) 0%, transparent 100%);
-  transform: translateX(4px);
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.01) 0%, transparent 100%);
 }
 
-.asset-row:hover::before {
+/* .asset-row:hover::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 3px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  border-radius: 0 2px 2px 0;
-}
+  width: 2px;
+  background: var(--color-primary);
+  border-radius: 0 1px 1px 0;
+  opacity: 0.4;
+} */
 
 /* Cell Styles */
 .asset-info-cell {
@@ -157,7 +157,7 @@
 }
 
 .asset-row:hover .change-badge {
-  transform: scale(1.05);
+  opacity: 0.9;
 }
 
 /* Chart Cell */

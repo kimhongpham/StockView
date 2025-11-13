@@ -10,7 +10,7 @@ import {
 
 const DashboardPage: React.FC = () => {
   const [marketStocks] = useState<Asset[]>([]);
-  const [latestPrices, setLatestPrices] = useState<Record<string, LatestPrice>>(
+  const [, setLatestPrices] = useState<Record<string, LatestPrice>>(
     {}
   );
   const [selectedStock, setSelectedStock] = useState<string>("VVS");

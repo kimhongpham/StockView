@@ -29,10 +29,19 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+//                    config.addAllowedOrigin("http://localhost:5173");
+                    config.addAllowedOrigin("http://localhost:8080");
+                    config.addAllowedHeader("*");
+                    config.addAllowedMethod("*");
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/actuator/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // 🔒 chỉ admin
+                        .requestMatchers("/api/auth/**", "/auth/oauth2/**", "/oauth2/**", "/actuator/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -49,8 +58,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler((request, response, authentication) -> {
-                            // Redirect trực tiếp tới endpoint backend
-                            response.sendRedirect("/auth/oauth2/success");
+                            response.sendRedirect("/api/auth/oauth2/success");
                         })
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                 )

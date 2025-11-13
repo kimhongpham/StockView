@@ -1,103 +1,130 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Chart,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  TimeScale,
+  Filler,
+} from "chart.js";
+import "chartjs-adapter-date-fns";
+import { fetchPriceHistory } from "../../utils/api";
+import { ChartPoint } from "../../types/asset";
+
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  TimeScale,
+  Filler
+);
 
 interface MiniChartProps {
-  data?: { timestamp: number | string; price: number }[];
-  width?: number | string;
+  assetId: string; // nhập asset ID (không phải symbol)
+  interval?: string; // "1d", "1m", ...
+  limit?: number;
   height?: number;
 }
 
 const MiniChart: React.FC<MiniChartProps> = ({
-  data,
-  width = "100%",
+  assetId,
+  interval = "1d",
+  limit = 30,
   height = 60,
 }) => {
-  if (!data || data.length === 0) {
-    return (
-      <div
-        style={{
-          width,
-          height,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: 0.5,
-          fontSize: "0.9rem",
-        }}
-      >
-        —
-      </div>
-    );
-  }
+  const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstance = useRef<Chart | null>(null);
+  const [data, setData] = useState<ChartPoint[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Chuẩn hoá dữ liệu (timestamp → số)
-  const series = data.map((d) => ({
-    ...d,
-    ts:
-      typeof d.timestamp === "number"
-        ? d.timestamp
-        : new Date(d.timestamp).getTime(),
-  }));
+  useEffect(() => {
+    if (!assetId) return;
 
-  const first = series[0]?.price ?? 0;
-  const last = series[series.length - 1]?.price ?? 0;
-  const positive = last >= first;
-  const color = positive ? "#16a34a" : "#dc2626";
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Lấy price history bằng assetId
+        const historyData = await fetchPriceHistory(assetId, limit);
+        const chartData =
+          historyData.content || historyData.data || historyData || [];
+
+        const mappedData = chartData.map((item: any) => ({
+          timestamp: item.timestamp || item.date,
+          close: item.price ?? item.close,
+        }));
+
+        setData(mappedData);
+      } catch (err) {
+        console.error("Lỗi fetch MiniChart:", err);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [assetId, interval, limit]);
+
+  useEffect(() => {
+    if (!chartRef.current || !data?.length) return;
+    const ctx = chartRef.current.getContext("2d");
+    if (!ctx) return;
+
+    if (chartInstance.current) chartInstance.current.destroy();
+
+    chartInstance.current = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.map((d) => new Date(d.timestamp ?? Date.now())),
+        datasets: [
+          {
+            data: data.map((d) => d.close),
+            borderColor: "#4CAF50",
+            backgroundColor: "transparent",
+            tension: 0.4,
+            pointRadius: 0,
+            fill: false,
+            borderWidth: 1.5,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+        },
+        scales: {
+          x: {
+            type: "time",
+            grid: { display: false },
+            ticks: { display: false },
+            border: { display: false },
+          },
+          y: {
+            display: false,
+            grid: { display: false },
+            border: { display: false },
+          },
+        },
+      },
+    });
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [data, height]);
+
+  if (loading) return <div style={{ height }}>—</div>;
+  if (!data.length) return <div style={{ height }}>—</div>;
 
   return (
-    <div style={{ width, height }}>
-      <ResponsiveContainer width="100%" height={height}>
-        <AreaChart
-          data={series}
-          margin={{ top: 2, right: 2, left: 2, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="gradMini" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
-              <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
-
-          <XAxis dataKey="ts" hide />
-          <YAxis domain={["dataMin", "dataMax"]} hide />
-
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "rgba(17, 24, 39, 0.85)",
-              border: "none",
-              borderRadius: "6px",
-              padding: "6px 8px",
-            }}
-            labelStyle={{ color: "#e5e7eb", fontSize: "0.75rem" }}
-            itemStyle={{ color: "#f8fafc", fontSize: "0.8rem" }}
-            formatter={(value: any) =>
-              typeof value === "number"
-                ? [value.toLocaleString("vi-VN"), "Giá"]
-                : [value, ""]
-            }
-            labelFormatter={(label) =>
-              new Date(Number(label)).toLocaleDateString("vi-VN")
-            }
-          />
-
-          <Area
-            type="monotone"
-            dataKey="price"
-            stroke={color}
-            fill="url(#gradMini)"
-            strokeWidth={1.6}
-            dot={false}
-            isAnimationActive={false} // ⚡ tắt animation cho hiệu năng cao khi có nhiều chart
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+    <div style={{ width: "100%", height, position: "relative" }}>
+      <canvas ref={chartRef} />
     </div>
   );
 };

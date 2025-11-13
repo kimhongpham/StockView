@@ -2,20 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AssetTable from "../../components/tables/AssetTable";
 import api from "../../utils/api";
+import { useAuthStore } from "../../store/authStore";
+import { fetchPriceChart } from "../../utils/api";
 
 interface WatchlistRow {
   id: string;
   symbol: string;
-  name?: string;
+  name: string;
   latestPrice?: number | null;
   change24h?: number | null;
   volume?: number | null;
   pe?: number | null;
   pb?: number | null;
-  chart30d?: any[] | null;
+  chart30d?: { timestamp: number; price: number }[] | null;
 }
 
 const WatchlistPage: React.FC = () => {
+  const { user: authUser } = useAuthStore();
   const [rows, setRows] = useState<WatchlistRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,34 +27,71 @@ const WatchlistPage: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        const res = await api.get("/users/watchlist");
-        const assets: WatchlistRow[] = Array.isArray(res.data)
-          ? res.data
-          : res.data.content || [];
+      if (!authUser?.token) {
+        setError("Bạn chưa đăng nhập");
+        setLoading(false);
+        return;
+      }
 
+      try {
+        // 1. Lấy danh sách symbol trong watchlist
+        const res = await api.get("/users/watchlist", {
+          headers: { Authorization: `Bearer ${authUser.token}` },
+        });
+
+        const symbols: string[] = res.data?.data || [];
+
+        // 2. Lấy overview + 30D chart
         const enriched: WatchlistRow[] = await Promise.all(
-          assets.map(async (a: WatchlistRow) => {
+          symbols.map(async (symbol) => {
             try {
-              const [latest, change] = await Promise.all([
-                api.get(`/prices/${a.id}/latest`),
-                api.get(`/prices/${a.id}/change`),
-              ]);
+              const overviewRes = await api.get(`/assets/${symbol}/overview`);
+              const o = overviewRes.data;
+
+              // Lấy dữ liệu 30D
+              let chart30d: { timestamp: number; price: number }[] = [];
+              try {
+                const chartDataRaw = await fetchPriceChart(symbol, "1d", 30);
+                chart30d = chartDataRaw.map(
+                  (c: { timestamp: number; price: number }) => ({
+                    timestamp: c.timestamp,
+                    price: c.price,
+                  })
+                );
+              } catch (err) {
+                console.warn(`Không lấy được chart 30D cho ${symbol}`);
+              }
 
               return {
-                ...a,
-                latestPrice: latest.data.price,
-                change24h: change.data.percentChange,
+                id: o.id,
+                symbol: o.symbol,
+                name: o.name,
+                latestPrice: o.currentPrice ?? null,
+                change24h: o.changePercent ?? null,
+                volume: o.volume ?? null,
+                pe: o.peRatio ?? null,
+                pb: o.pbRatio ?? null,
+                chart30d,
+              };
+            } catch (err) {
+              console.warn(`Không lấy được thông tin cho ${symbol}`, err);
+              return {
+                id: symbol,
+                symbol,
+                name: "",
+                latestPrice: null,
+                change24h: null,
+                volume: null,
+                pe: null,
+                pb: null,
                 chart30d: [],
               };
-            } catch {
-              return { ...a, latestPrice: null, change24h: null, chart30d: [] };
             }
           })
         );
 
         setRows(enriched);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error loading watchlist:", err);
         setError("Không thể tải danh sách theo dõi.");
       } finally {
@@ -60,7 +100,7 @@ const WatchlistPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [authUser?.token]);
 
   const visibleRows = rows.filter((r) => {
     const q = filter.trim().toLowerCase();
@@ -76,21 +116,19 @@ const WatchlistPage: React.FC = () => {
       <h1 className="page-title font-bold text-2xl mb-4">Danh Mục Theo Dõi</h1>
 
       <div className="flex items-center gap-3 mb-4">
-        <div className="ml-auto">
-          {loading ? (
-            <div className="flex items-center gap-2 text-gray-500">
-              <div className="spinner" /> Đang tải dữ liệu...
-            </div>
-          ) : error ? (
-            <div className="text-red-600">{error}</div>
-          ) : null}
-        </div>
+        {loading ? (
+          <div className="flex items-center gap-2 text-gray-500">
+            <div className="spinner" /> Đang tải dữ liệu...
+          </div>
+        ) : error ? (
+          <div className="text-red-600">{error}</div>
+        ) : null}
       </div>
 
       <AssetTable
         rows={visibleRows}
-        showChart={true} // có cột biểu đồ 30D
-        showStar={false}
+        showChart={true} // Hiển thị chart 30D
+        showStar={false} // Watchlist không cần star
         onRowClick={(symbol) => navigate(`/stocks/${symbol}`)}
       />
 

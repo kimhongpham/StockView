@@ -32,7 +32,7 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const {initializeAuth, logout } = useAuthStore();
+  const { initializeAuth, logout, user, isLoggedIn } = useAuthStore();
 
   useEffect(() => {
     initializeAuth();
@@ -47,18 +47,41 @@ const AppContent: React.FC = () => {
     return path.replace("/", "") || "dashboard";
   };
 
-  const handlePageChange = (page: string) => {
-    const routes: { [key: string]: string } = {
+  // Lấy sidebar routes dựa trên role và login status
+  const getSidebarRoutes = () => {
+    // Nếu chưa đăng nhập, chỉ hiện dashboard và stock
+    if (!isLoggedIn) {
+      return {
+        dashboard: "/dashboard",
+        stock: "/stock",
+      };
+    }
+
+    const isAdmin = user?.role === "admin" || user?.role === "ADMIN";
+    
+    if (isAdmin) {
+      return {
+        admin: "/admin",
+        dashboard: "/dashboard",
+      };
+    }
+    
+    // Default user routes
+    return {
       dashboard: "/dashboard",
       stock: "/stock",
       favorit: "/favorit",
       wallet: "/wallet",
       profile: "/profile",
-      admin: "/admin",
     };
+  };
 
-    if (routes[page]) {
-      navigate(routes[page]);
+  const handlePageChange = (page: string) => {
+    const routes = getSidebarRoutes();
+    const path = routes[page as keyof typeof routes];
+    
+    if (path) {
+      navigate(path);
     }
   };
 
@@ -94,6 +117,10 @@ const AppContent: React.FC = () => {
           <Route path="/wallet" element={<WalletPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+          {/* Một số backend redirect về /auth/oauth2/success */}
+          <Route path="/auth/oauth2/success" element={<OAuth2RedirectHandler />} />
+          {/* Bắt mọi biến thể dưới /auth/oauth2/* */}
+          <Route path="/auth/oauth2/*" element={<OAuth2RedirectHandler />} />
         </Routes>
       </MainLayout>
 
