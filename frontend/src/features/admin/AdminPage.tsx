@@ -12,22 +12,36 @@ const AdminPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const { assets, fetchAllAssets, deleteAsset, loading } = useAssetStore();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{text: string; type: "success" | "error" | "info" | "warning"} | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   useEffect(() => {
     fetchAllAssets();
   }, []);
 
+  // Auto hide notification after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
+  const showNotification = (text: string, type: "success" | "error" | "info" | "warning" = "info") => {
+    setMessage({ text, type });
+  };
+
   const handleFetchNewAssets = async () => {
     setIsBusy(true);
     try {
       await fetchNewMarketStocks();
       await fetchAllAssets();
-      setMessage("✅ Fetched new market stocks successfully");
+      showNotification("Đã tải thành công các mã chứng khoán mới từ thị trường", "success");
     } catch (e) {
       console.error(e);
-      setMessage("❌ Failed to fetch new market stocks");
+      showNotification("Không thể tải dữ liệu chứng khoán mới từ thị trường", "error");
     } finally {
       setIsBusy(false);
     }
@@ -37,7 +51,7 @@ const AdminPage: React.FC = () => {
     setIsBusy(true);
     try {
       const { jobId } = await startFetchAllPrices();
-      setMessage("⏳ Updating all prices, please wait...");
+      showNotification("Đang cập nhật giá toàn bộ tài sản...", "info");
 
       // Poll trạng thái mỗi 5s
       const interval = setInterval(async () => {
@@ -45,23 +59,23 @@ const AdminPage: React.FC = () => {
         if (status.status === "DONE") {
           clearInterval(interval);
           setIsBusy(false);
-          setMessage("✅ All prices updated successfully");
+          showNotification("Cập nhật giá thành công cho tất cả tài sản", "success");
         } else if (status.status === "FAILED") {
           clearInterval(interval);
           setIsBusy(false);
-          setMessage("❌ Failed to update prices");
+          showNotification("Có lỗi xảy ra khi cập nhật giá", "error");
         }
       }, 5000);
     } catch (err) {
       console.error(err);
-      setMessage("❌ Failed to start update job");
+      showNotification("Không thể khởi động tiến trình cập nhật", "error");
       setIsBusy(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     await deleteAsset(id);
-    setMessage("🗑️ Asset deleted successfully");
+    showNotification("Đã xóa tài sản thành công", "success");
   };
 
   // Sort assets
@@ -99,8 +113,46 @@ const AdminPage: React.FC = () => {
     <div className="p-6 space-y-4">
       <h1 className="page-title">Admin Dashboard</h1>
 
+      {/* Enhanced Notification */}
       {message && (
-        <div className="p-2 bg-blue-100 text-blue-800 rounded">{message}</div>
+        <div className={`notification notification-${message.type} animate-slide-in`}>
+          <div className="notification-content">
+            <div className="notification-icon">
+              {message.type === "success" && (
+                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">✓</span>
+                </div>
+              )}
+              {message.type === "error" && (
+                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">✕</span>
+                </div>
+              )}
+              {message.type === "warning" && (
+                <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">!</span>
+                </div>
+              )}
+              {message.type === "info" && (
+                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">i</span>
+                </div>
+              )}
+            </div>
+            <div className="notification-message">
+              {message.text}
+            </div>
+          </div>
+          <button 
+            onClick={() => setMessage(null)}
+            className="notification-close"
+          >
+            ×
+          </button>
+          <div className="notification-progress">
+            <div className="notification-progress-bar"></div>
+          </div>
+        </div>
       )}
 
       <AdminActions

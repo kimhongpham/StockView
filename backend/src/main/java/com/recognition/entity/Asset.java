@@ -5,34 +5,37 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(
         name = "assets",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_asset_symbol", columnNames = {"symbol"})
+        },
         indexes = {
-                @Index(name = "idx_assets_symbol", columnList = "symbol"),
-                @Index(name = "idx_assets_is_active", columnList = "is_active")
+                @Index(name = "idx_asset_symbol", columnList = "symbol"),
+                @Index(name = "idx_asset_is_active", columnList = "is_active")
         }
 )
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Asset {
 
   @Id
-  @GeneratedValue
-  @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
+  @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "name", nullable = false, unique = true, length = 100)
-  private String name;
+  @Column(nullable = false, length = 20)
+  private String symbol; // e.g. AAPL, TSLA, BTC
 
-  @Column(name = "symbol", nullable = false, unique = true, length = 20)
-  private String symbol;
+  @Column(nullable = false, length = 100)
+  private String name;
 
   @Column(columnDefinition = "TEXT")
   private String description;
@@ -40,11 +43,33 @@ public class Asset {
   @Column(name = "is_active", nullable = false)
   private Boolean isActive = true;
 
+  @Column(name = "market_cap", precision = 20, scale = 2)
+  private BigDecimal marketCap;
+
+  @Column(name = "volume", precision = 20, scale = 2)
+  private BigDecimal volume;
+
+  @Column(name = "shares_outstanding", precision = 20, scale = 2)
+  private BigDecimal sharesOutstanding;
+
+  @Column(name = "pe_ratio", precision = 10, scale = 4)
+  private BigDecimal peRatio;
+
+  @Column(name = "pb_ratio", precision = 10, scale = 4)
+  private BigDecimal pbRatio;
+
+  @Column(name = "eps", precision = 10, scale = 4)
+  private BigDecimal eps;
+
+  @Column(name = "book_value", precision = 10, scale = 4)
+  private BigDecimal bookValue;
+
+  @Column(name = "ev_to_ebitda", precision = 10, scale = 4)
+  private BigDecimal evToEbitda;
+
   @CreationTimestamp
-  @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
   private OffsetDateTime createdAt;
 
   @UpdateTimestamp
-  @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
   private OffsetDateTime updatedAt;
 }

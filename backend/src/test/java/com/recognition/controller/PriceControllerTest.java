@@ -1,150 +1,164 @@
 package com.recognition.controller;
 
 import com.recognition.dto.PriceDto;
+import com.recognition.dto.response.StatisticsDTO;
 import com.recognition.entity.Price;
+import com.recognition.service.AsyncPriceService;
 import com.recognition.service.PriceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(PriceController.class)
 class PriceControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    // Thay @Mock thành @MockBean
+    @MockBean
     private PriceService priceService;
 
-    @InjectMocks
-    private PriceController priceController;
+    @MockBean
+    private AsyncPriceService asyncPriceService;
 
     private UUID assetId;
-    private PriceDto dto;
-    private Pageable pageable;
+    private PriceDto mockPrice;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-
+    void setup() {
         assetId = UUID.randomUUID();
-
-        dto = new PriceDto();
-        dto.setAssetId(assetId);
-        dto.setPrice(BigDecimal.valueOf(100));
-        dto.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
-
-        pageable = PageRequest.of(0, 10, Sort.by("timestamp").descending());
+        mockPrice = new PriceDto();
+        mockPrice.setAssetId(assetId);
+        mockPrice.setPrice(BigDecimal.valueOf(120.5));
+        mockPrice.setTimestamp(OffsetDateTime.now());
     }
 
     @Test
-    void testGetLatestPrice() {
-        when(priceService.getLatestPriceDto(assetId)).thenReturn(dto);
+    void testGetLatestPrice() throws Exception {
+        Mockito.when(priceService.getLatestPriceDto(assetId)).thenReturn(mockPrice);
 
-        ResponseEntity<PriceDto> response = priceController.getLatestPrice(assetId);
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(dto, response.getBody());
+        mockMvc.perform(get("/api/prices/{id}/latest", assetId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price").value(120.5));
     }
 
     @Test
-    void testGetPriceHistoryPaged() {
-        Page<PriceDto> page = new PageImpl<>(List.of(dto));
-
-        when(priceService.getPriceHistoryPaged(
-                any(UUID.class),
-                any(),
-                any(),
-                any(Pageable.class)
-        )).thenReturn(page);
-
-        ResponseEntity<Page<PriceDto>> response = priceController.getPriceHistoryPaged(
-                assetId,
-                null, // startDate
-                null, // endDate
-                pageable
-        );
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getContent().size());
-        assertEquals(dto.getPrice(), response.getBody().getContent().get(0).getPrice());
-    }
-
-    @Test
-    void testAddPrice() {
+    void testAddPrice() throws Exception {
         Price price = new Price();
-        price.setPrice(BigDecimal.valueOf(123));
+        price.setId(UUID.randomUUID());
+        price.setPrice(BigDecimal.valueOf(200));
 
-        when(priceService.addPriceEntity(eq(assetId), any(Price.class))).thenReturn(price);
+        Mockito.when(priceService.addPriceEntity(any(UUID.class), any(Price.class))).thenReturn(price);
 
-        ResponseEntity<Price> response = priceController.addPrice(assetId, price);
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(price.getPrice(), response.getBody().getPrice());
+        mockMvc.perform(post("/api/prices/{id}", assetId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"price\":200}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.price").value(200));
     }
 
     @Test
-    void testFetchAndSavePrice() {
-        when(priceService.fetchAndSavePrice(assetId)).thenReturn(dto);
+    void testFetchAndSavePrice() throws Exception {
+        Mockito.when(priceService.fetchAndSavePrice(assetId)).thenReturn(mockPrice);
 
-        ResponseEntity<PriceDto> response = priceController.fetchAndSavePrice(assetId);
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(dto, response.getBody());
+        mockMvc.perform(post("/api/prices/{id}/fetch", assetId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.price").value(120.5));
     }
 
     @Test
-    void testGetPriceChange() {
-        BigDecimal change = BigDecimal.valueOf(5.5);
-        when(priceService.calculatePriceChange(assetId, 24)).thenReturn(change);
+    void testStartFetchAll() throws Exception {
+        Mockito.when(asyncPriceService.startJob()).thenReturn("job123");
 
-        ResponseEntity<BigDecimal> response = priceController.getPriceChange(assetId, 24);
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(change, response.getBody());
+        mockMvc.perform(post("/api/prices/fetch-all/start"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.jobId").value("job123"));
     }
 
-    // Ví dụ test cho controller trả về Map (chart)
     @Test
-    void testGetChart() {
-        Map<String, Object> chartData = Map.of(
-                "open", 100,
-                "close", 110
+    void testGetStatus() throws Exception {
+        Mockito.when(asyncPriceService.getJobStatus("job123")).thenReturn(Map.of("progress", 50));
+
+        mockMvc.perform(get("/api/prices/fetch-all/status/job123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progress").value(50));
+    }
+
+    @Test
+    void testGetPriceHistoryPaged() throws Exception {
+        Page<PriceDto> page = new PageImpl<>(List.of(mockPrice));
+        Mockito.when(priceService.getPriceHistoryPaged(any(), any(), any(), any()))
+                .thenReturn(page);
+
+        mockMvc.perform(get("/api/prices/{id}/history/paged", assetId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].price").value(120.5));
+    }
+
+    @Test
+    void testGetChart() throws Exception {
+        Mockito.when(priceService.getCandles(any(), anyString(), anyInt()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/api/prices/{id}/chart", assetId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void testGetPriceChange() throws Exception {
+        Mockito.when(priceService.calculatePriceChange(assetId, 24))
+                .thenReturn(BigDecimal.valueOf(3.5));
+
+        mockMvc.perform(get("/api/prices/{id}/change", assetId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(3.5));
+    }
+
+    @Test
+    void testGetStats() throws Exception {
+        StatisticsDTO stats = new StatisticsDTO(
+                BigDecimal.valueOf(100),   // minPrice
+                BigDecimal.valueOf(200),   // maxPrice
+                BigDecimal.valueOf(150),   // avgPrice
+                OffsetDateTime.now().minusDays(1), // from
+                OffsetDateTime.now()                // to
         );
-        Map<String, Object> responseMap = Map.of(
-                "success", true,
-                "message", "Chart data fetched successfully",
-                "data", chartData
-        );
 
-        // Giả sử bạn có service chartPriceService.getCandles(...)
-        // when(chartPriceService.getCandles(eq(assetId), anyString(), anyInt())).thenReturn(chartData);
+        Mockito.when(priceService.getStatistics(assetId, "day")).thenReturn(stats);
 
-        // Giả sử chart controller trả về ResponseEntity<Map<String, Object>>
-        ResponseEntity<Map<String, Object>> response = ResponseEntity.ok(responseMap);
+        mockMvc.perform(get("/api/prices/{id}/stats", assetId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.avgPrice").value(150));
+    }
 
-        assertNotNull(response);
-        assertNotNull(response.getBody());
+    @Test
+    void testGetTopMovers() throws Exception {
+        Mockito.when(priceService.getTopMovers("gainers", 5))
+                .thenReturn(List.of(mockPrice));
 
-        Map<String, Object> body = response.getBody();
-        assertEquals(true, body.get("success"));
-        assertEquals("Chart data fetched successfully", body.get("message"));
-        assertEquals(chartData, body.get("data"));
+        mockMvc.perform(get("/api/prices/top")
+                        .param("type", "gainers")
+                        .param("limit", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].price").value(120.5));
     }
 }

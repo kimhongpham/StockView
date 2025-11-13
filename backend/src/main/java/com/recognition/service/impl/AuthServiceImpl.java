@@ -89,7 +89,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void registerOrUpdateSocial(String provider, String providerId, String email, String username, String avatarUrl) {
-        // attempt find by providerId or email
         Users u = userRepository.findByEmail(email).orElse(null);
         if (u == null) {
             u = new Users();

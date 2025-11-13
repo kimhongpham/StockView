@@ -118,10 +118,9 @@ public class PriceServiceImpl implements PriceService {
             log.warn("Unable to fetch volume for {}: {}", asset.getSymbol(), e.getMessage());
         }
 
-        // ✅ Convert BigDecimal → Long để phù hợp với entity
-        Long volumeValue = (volume != null) ? volume.longValue() : null;
+        BigDecimal volumeValue = (volume != null) ? volume : null;
 
-        // 🔹 Lấy giá trước đó
+        // Lấy giá trước đó
         Price previousPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset).orElse(null);
 
         BigDecimal changePercent = null;
@@ -135,20 +134,20 @@ public class PriceServiceImpl implements PriceService {
             log.info("Change for {}: {} -> {} = {}%", asset.getSymbol(), previousPrice.getPrice(), priceValue, changePercent);
         }
 
-        // 🔹 Bỏ qua nếu giá trùng nhau (tránh spam record)
+        // Bỏ qua nếu giá trùng nhau (tránh spam record)
         if (previousPrice != null && previousPrice.getPrice().compareTo(priceValue) == 0) {
             log.info("⏸ No price change for {}, skipping insert.", asset.getSymbol());
             return mapToDto(previousPrice);
         }
 
-        // 🔹 Lưu bản ghi giá mới
+        // Lưu bản ghi giá mới
         Price price = Price.builder()
                 .asset(asset)
                 .price(priceValue)
                 .timestamp(OffsetDateTime.now())
                 .source(source)
                 .changePercent(changePercent)
-                .volume(volumeValue) // ✅ kiểu Long khớp với entity
+                .volume(volumeValue)
                 .build();
 
         Price saved = priceRepository.save(price);
@@ -218,7 +217,6 @@ public class PriceServiceImpl implements PriceService {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime start;
 
-        // Nếu interval = null hoặc không hợp lệ → lấy toàn bộ
         if (interval == null || interval.isBlank()) interval = "all";
 
         switch (interval.toLowerCase()) {
@@ -229,19 +227,16 @@ public class PriceServiceImpl implements PriceService {
             default -> throw new IllegalArgumentException("Invalid interval: " + interval);
         }
 
-        // 🔹 Lấy danh sách giá theo khoảng thời gian (hoặc toàn bộ)
         List<Price> prices = "all".equalsIgnoreCase(interval)
                 ? priceRepository.findByAssetIdOrderByTimestampAsc(assetId)
                 : priceRepository.findByAssetAndTimestampBetweenOrderByTimestampAsc(assetId, start, now);
 
         if (prices.isEmpty()) return Collections.emptyList();
 
-        // 🔹 Giới hạn số lượng bản ghi cuối cùng (nếu có)
         List<Price> limited = prices.size() > limit
                 ? prices.subList(prices.size() - limit, prices.size())
                 : prices;
 
-        // 🔹 Chuyển sang CandleDTO
         return limited.stream()
                 .map(p -> new CandleDTO(
                         p.getTimestamp(),
@@ -249,7 +244,7 @@ public class PriceServiceImpl implements PriceService {
                         p.getPrice(), // high
                         p.getPrice(), // low
                         p.getPrice(), // close
-                        p.getVolume()
+                        p.getVolume() != null ? p.getVolume().longValue() : null // convert BigDecimal -> Long
                 ))
                 .collect(Collectors.toList());
     }
@@ -311,7 +306,7 @@ public class PriceServiceImpl implements PriceService {
         List<Asset> assets = assetRepository.findByIsActiveTrue();
         List<String> symbols = assets.stream().map(Asset::getSymbol).toList();
 
-        // 📦 Gọi 1 lần duy nhất để lấy toàn bộ giá
+        // Gọi 1 lần duy nhất để lấy toàn bộ giá
         Map<String, BigDecimal> prices = finnhubClient.fetchAllPrices(symbols);
 
         int updated = 0;

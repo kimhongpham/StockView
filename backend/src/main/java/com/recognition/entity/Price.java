@@ -13,55 +13,41 @@ import java.util.UUID;
         name = "prices",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "idx_prices_asset_timestamp_source",
+                        name = "uq_price_asset_timestamp_source",
                         columnNames = {"asset_id", "timestamp", "source"}
                 )
         },
         indexes = {
-                @Index(name = "idx_prices_asset_id", columnList = "asset_id"),
-                @Index(name = "idx_prices_timestamp", columnList = "timestamp"),
-                @Index(name = "idx_prices_asset_timestamp", columnList = "asset_id, timestamp"),
-                @Index(name = "idx_prices_created_at", columnList = "created_at"),
-                @Index(name = "idx_prices_asset_created_desc", columnList = "asset_id, created_at DESC")
+                @Index(name = "idx_price_asset_timestamp", columnList = "asset_id, timestamp DESC")
         }
 )
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Price {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(updatable = false, nullable = false)
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(
-          name = "asset_id",
-          nullable = false,
-          foreignKey = @ForeignKey(name = "fk_price_asset")
-  )
+  @JoinColumn(name = "asset_id", foreignKey = @ForeignKey(name = "fk_price_asset"))
   private Asset asset;
-
-  @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-  private OffsetDateTime timestamp;
 
   @Column(nullable = false, precision = 18, scale = 8)
   private BigDecimal price;
 
-  @Column
-  private Long volume;
+  @Column(name = "timestamp", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+  private OffsetDateTime timestamp;
 
+  @Column(name = "source", nullable = false, length = 50)
+  private String source; // e.g. "Finnhub", "Manual", "Yahoo"
+
+  // 🔹 Trường mở rộng
   @Column(name = "change_percent", precision = 10, scale = 4)
   private BigDecimal changePercent;
-
-  @Column(name = "pe_ratio", precision = 10, scale = 4)
-  private BigDecimal peRatio;
-
-  @Column(name = "pb_ratio", precision = 10, scale = 4)
-  private BigDecimal pbRatio;
 
   @Column(name = "high_24h", precision = 18, scale = 8)
   private BigDecimal high24h;
@@ -69,13 +55,12 @@ public class Price {
   @Column(name = "low_24h", precision = 18, scale = 8)
   private BigDecimal low24h;
 
+  @Column(name = "volume", precision = 20, scale = 2)
+  private BigDecimal volume;
+
   @Column(name = "market_cap", precision = 20, scale = 2)
   private BigDecimal marketCap;
 
-  @Column(nullable = false, length = 100)
-  private String source;
-
   @CreationTimestamp
-  @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
   private OffsetDateTime createdAt;
 }

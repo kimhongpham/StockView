@@ -24,4 +24,5 @@ public interface AssetRepository extends JpaRepository<Asset, UUID>, JpaSpecific
     void deleteById(UUID assetId);
 
     List<Asset> findByIsActiveTrue();
+    List<Asset> findBySymbolContainingIgnoreCaseOrNameContainingIgnoreCase(String symbol, String name);
 }

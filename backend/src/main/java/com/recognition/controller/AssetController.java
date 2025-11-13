@@ -27,9 +27,7 @@ public class AssetController {
 
     private final AssetService assetService;
 
-    /**
-     * Retrieve all assets stored in the database.
-     */
+    // 1. Retrieve all assets stored in the database.
     @GetMapping
     @Operation(summary = "Get all assets", description = "Retrieve all assets from the local database")
     public ResponseEntity<List<Asset>> getAllAssets() {
@@ -38,9 +36,23 @@ public class AssetController {
         return ResponseEntity.ok(assets);
     }
 
-    /**
-     * Check if an asset exists by symbol.
-     */
+    // 2. Retrieve both asset and company information in one call.
+    @GetMapping("/{symbol}/overview")
+    @Operation(summary = "Get asset overview", description = "Retrieve both asset details and company information for the given symbol")
+    public ResponseEntity<?> getAssetOverview(
+            @Parameter(description = "Asset symbol (e.g. AAPL, BTC)") @PathVariable String symbol) {
+        log.info("Fetching asset overview for symbol: {}", symbol);
+        try {
+            Map<String, Object> overview = assetService.getAssetOverview(symbol);
+            return ResponseEntity.ok(overview);
+        } catch (Exception e) {
+            log.error("Failed to fetch asset overview for {}: {}", symbol, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Unable to fetch asset overview", "symbol", symbol));
+        }
+    }
+
+    // 3. Check if an asset exists by symbol.
     @GetMapping("/exists/{symbol}")
     @Operation(summary = "Check if asset exists", description = "Check whether an asset with the given symbol exists in the database")
     public ResponseEntity<Map<String, Object>> checkAssetExists(
@@ -56,9 +68,14 @@ public class AssetController {
         }
     }
 
-    /**
-     * Delete an asset by its ID.
-     */
+    // 4. Tìm kiếm cổ phiếu theo tên hoặc ký hiệu
+    @GetMapping("/search")
+    public ResponseEntity<List<Asset>> searchAssets(@RequestParam String query) {
+        List<Asset> results = assetService.searchAssets(query);
+        return ResponseEntity.ok(results);
+    }
+
+    // 5. Delete an asset by its ID.
     @DeleteMapping("/{assetId}")
     @Operation(summary = "Delete asset", description = "Delete an asset by its ID along with related price data")
     public ResponseEntity<?> deleteAsset(@PathVariable UUID assetId) {
@@ -79,27 +96,7 @@ public class AssetController {
         }
     }
 
-    /**
-     * Retrieve both asset and company information in one call.
-     */
-    @GetMapping("/{symbol}/overview")
-    @Operation(summary = "Get asset overview", description = "Retrieve both asset details and company information for the given symbol")
-    public ResponseEntity<?> getAssetOverview(
-            @Parameter(description = "Asset symbol (e.g. AAPL, BTC)") @PathVariable String symbol) {
-        log.info("Fetching asset overview for symbol: {}", symbol);
-        try {
-            Map<String, Object> overview = assetService.getAssetOverview(symbol);
-            return ResponseEntity.ok(overview);
-        } catch (Exception e) {
-            log.error("Failed to fetch asset overview for {}: {}", symbol, e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Unable to fetch asset overview", "symbol", symbol));
-        }
-    }
-
-    /**
-     * Fetch and store new market stocks that are not yet in the database.
-     */
+    // 6. Fetch and store new market stocks that are not yet in the database.
     @GetMapping("/market/stocks/new")
     @Operation(summary = "Fetch new market stocks", description = "Fetch and store up to 10 new stocks from Finnhub that are not yet in the database")
     public ResponseEntity<?> fetchNewMarketStocks() {
@@ -114,9 +111,7 @@ public class AssetController {
         }
     }
 
-    /**
-     * Fetch latest price for a given asset and save it to the database.
-     */
+    // 7. Fetch latest price for a given asset and save it to the database.
     @PostMapping("/prices/{assetId}/fetch")
     @Operation(summary = "Fetch and save latest price", description = "Fetch latest price from external API and save it to the database")
     public ResponseEntity<?> fetchAndSaveLatestPrice(
@@ -131,4 +126,6 @@ public class AssetController {
                     .body(Map.of("error", "Unable to fetch latest price", "assetId", assetId.toString()));
         }
     }
+
+    // thống kê, đồng bộ hàng loạt, cache refresh...
 }

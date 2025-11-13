@@ -66,10 +66,8 @@ public class AssetServiceImpl implements AssetService {
 
         if (latestPrice != null) {
             result.put("currentPrice", latestPrice.getPrice());
-            result.put("volume", latestPrice.getVolume());
             result.put("changePercent", latestPrice.getChangePercent());
-            result.put("peRatio", latestPrice.getPeRatio());
-            result.put("pbRatio", latestPrice.getPbRatio());
+            result.put("volume", latestPrice.getVolume());
             result.put("high24h", latestPrice.getHigh24h());
             result.put("low24h", latestPrice.getLow24h());
             result.put("marketCap", latestPrice.getMarketCap());
@@ -80,7 +78,54 @@ public class AssetServiceImpl implements AssetService {
             result.put("source", "Database (no price yet)");
         }
 
+// 🔹 Bổ sung thêm metrics từ Asset
+        result.put("marketCap_static", asset.getMarketCap());
+        result.put("peRatio", asset.getPeRatio());
+        result.put("pbRatio", asset.getPbRatio());
+        result.put("eps", asset.getEps());
+        result.put("bookValue", asset.getBookValue());
+        result.put("evToEbitda", asset.getEvToEbitda());
+        result.put("sharesOutstanding", asset.getSharesOutstanding());
+
         return result;
+    }
+
+    @Override
+    public boolean existsBySymbol(String symbol) {
+        return assetRepository.existsBySymbol(symbol);
+    }
+
+    @Override
+    public List<Asset> searchAssets(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return assetRepository.findBySymbolContainingIgnoreCaseOrNameContainingIgnoreCase(query, query);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAsset(UUID assetId) {
+        log.info("Attempting to delete asset with ID: {}", assetId);
+        try {
+            if (!assetRepository.existsById(assetId)) {
+                log.warn("Asset not found: {}", assetId);
+                throw new ResourceNotFoundException("Asset not found with ID: " + assetId);
+            }
+
+            priceRepository.deleteAllByAssetId(assetId);
+            log.info("Deleted all prices linked to asset {}", assetId);
+
+            assetRepository.deleteById(assetId);
+            log.info("Asset deleted successfully: {}", assetId);
+
+        } catch (DataIntegrityViolationException e) {
+            log.error("Constraint violation while deleting asset {}: {}", assetId, e.getMessage());
+            throw new RuntimeException("Cannot delete asset due to existing references (FK constraint)");
+        } catch (Exception e) {
+            log.error("Unexpected error while deleting asset {}: {}", assetId, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete asset: " + e.getMessage());
+        }
     }
 
     @Override
@@ -127,6 +172,7 @@ public class AssetServiceImpl implements AssetService {
         quote.put("l", currentPrice);
         quote.put("t", Instant.now().getEpochSecond());
 
+        // Lấy hoặc tạo mới Asset
         Asset asset = assetRepository.findBySymbol(symbol)
                 .orElseGet(() -> assetRepository.save(
                         Asset.builder()
@@ -136,6 +182,24 @@ public class AssetServiceImpl implements AssetService {
                                 .isActive(true)
                                 .build()
                 ));
+
+        // ✅ Lấy thêm metrics từ Finnhub (nếu có)
+        Map<String, Object> metrics = finnhubClient.fetchStockMetrics(symbol);
+        if (metrics != null && !metrics.isEmpty()) {
+            try {
+                asset.setMarketCap(toBigDecimal(metrics.get("marketCapitalization")));
+                asset.setVolume(toBigDecimal(metrics.get("volume")));
+                asset.setSharesOutstanding(toBigDecimal(metrics.get("shareOutstanding")));
+                asset.setPeRatio(toBigDecimal(metrics.get("peNormalizedAnnual")));
+                asset.setPbRatio(toBigDecimal(metrics.get("pbAnnual")));
+                asset.setEvToEbitda(toBigDecimal(metrics.get("evToEbitdaAnnual")));
+                asset.setEps(toBigDecimal(metrics.get("epsAnnual")));
+                asset.setBookValue(toBigDecimal(metrics.get("bookValuePerShareAnnual")));
+                assetRepository.save(asset);
+            } catch (Exception e) {
+                log.warn("Error enriching asset metrics for {}: {}", symbol, e.getMessage());
+            }
+        }
 
         // Xử lý timestamp hợp lệ
         long ts = ((Number) quote.get("t")).longValue();
@@ -168,12 +232,18 @@ public class AssetServiceImpl implements AssetService {
             log.warn("Duplicate price ignored for asset {} at {}", asset.getSymbol(), price.getTimestamp());
         }
 
+        // Kết quả trả ra
         Map<String, Object> enriched = new LinkedHashMap<>(stock);
         enriched.put("assetId", asset.getId());
         enriched.put("price", quote.get("c"));
         enriched.put("high24h", quote.get("h"));
         enriched.put("low24h", quote.get("l"));
         enriched.put("timestamp", price.getTimestamp().toString());
+        enriched.put("marketCap", asset.getMarketCap());
+        enriched.put("volume", asset.getVolume());
+        enriched.put("pe", asset.getPeRatio());
+        enriched.put("pb", asset.getPbRatio());
+
         result.add(enriched);
     }
 
@@ -186,48 +256,23 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() -> new ResourceNotFoundException("Price not found after save: " + priceDto.getId()));
     }
 
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) return null;
 
-    @Override
-    public boolean existsBySymbol(String symbol) {
-        return assetRepository.existsBySymbol(symbol);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAsset(UUID assetId) {
-        log.info("Attempting to delete asset with ID: {}", assetId);
-        try {
-            if (!assetRepository.existsById(assetId)) {
-                log.warn("Asset not found: {}", assetId);
-                throw new ResourceNotFoundException("Asset not found with ID: " + assetId);
+        return switch (value) {
+            case BigDecimal bd -> bd;
+            case Integer i -> BigDecimal.valueOf(i);
+            case Long l -> BigDecimal.valueOf(l);
+            case Float f -> new BigDecimal(Float.toString(f));
+            case Double d -> BigDecimal.valueOf(d);
+            case Number n -> new BigDecimal(n.toString());
+            default -> {
+                try {
+                    yield new BigDecimal(value.toString());
+                } catch (NumberFormatException e) {
+                    yield null;
+                }
             }
-
-            priceRepository.deleteAllByAssetId(assetId);
-            log.info("Deleted all prices linked to asset {}", assetId);
-
-            assetRepository.deleteById(assetId);
-            log.info("Asset deleted successfully: {}", assetId);
-
-        } catch (DataIntegrityViolationException e) {
-            log.error("Constraint violation while deleting asset {}: {}", assetId, e.getMessage());
-            throw new RuntimeException("Cannot delete asset due to existing references (FK constraint)");
-        } catch (Exception e) {
-            log.error("Unexpected error while deleting asset {}: {}", assetId, e.getMessage(), e);
-            throw new RuntimeException("Failed to delete asset: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Populate the latest price information from DB into the response map.
-     */
-    private void populatePriceFromDB(Asset asset, Map<String, Object> response) {
-        if (asset == null || response == null) return;
-
-        priceRepository.findTopByAssetIdOrderByTimestampDesc(asset.getId())
-                .ifPresent(latestPrice -> {
-                    response.put("source", "Database");
-                    response.put("currentPrice", latestPrice.getPrice());
-                    response.put("timestamp", latestPrice.getTimestamp().toString());
-                });
+        };
     }
 }

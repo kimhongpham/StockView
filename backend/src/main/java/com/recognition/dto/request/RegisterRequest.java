@@ -17,11 +17,9 @@ public class RegisterRequest {
     @Email
     private String email;
 
-    // Password can be empty for social login (provider non-null)
     @Size(min = 6, max = 128)
     private String password;
 
-    // Optional social provider fields
     private String provider;
     private String providerId;
 

@@ -25,7 +25,6 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
-    // ===================== OAuth2 redirect endpoint =====================
     @GetMapping("/auth/oauth2/success")
     public void oauth2Success(Authentication authentication, HttpServletResponse response) throws IOException {
 

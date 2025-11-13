@@ -1,69 +1,98 @@
-/* StockDetailPage styles updated to use theme variables (supports light & dark) */
+/* StockDetailPage.css - Optimized for Design System */
 .stock-detail-page {
-  max-width: 1200px;
+  max-width: var(--container-width);
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--spacing-6);
+  min-height: 100vh;
 }
 
 .stock-detail-container {
   background: var(--card-bg);
-  border-radius: 12px;
+  border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-md);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 /* Header Section */
 .stock-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 40px;
-  padding: 30px;
+  gap: var(--spacing-10);
+  padding: var(--spacing-8);
   border-bottom: 1px solid var(--border-color);
   background: var(--card-bg);
+  align-items: start;
 }
 
-.stock-title-section .stock-symbol {
+.stock-symbol-container {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
+}
+
+.stock-symbol {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-color);
-  margin: 0 0 8px 0;
+  margin: 0;
+  line-height: 1.1;
 }
 
 .stock-exchange {
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
+  background: var(--neutral-100);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--border-radius-full);
+}
+
+.dark-mode .stock-exchange {
+  background: var(--neutral-700);
 }
 
 .company-name {
   font-size: 1.25rem;
   color: var(--text-color);
-  margin: 0 0 12px 0;
-  font-weight: 600;
+  margin: 0 0 var(--spacing-3) 0;
+  font-weight: var(--font-weight-semibold);
 }
 
 .company-description {
   color: var(--text-muted);
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
   margin: 0;
 }
 
 .stock-price-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  min-width: 280px;
+}
+
+.price-main {
   text-align: right;
 }
 
 .current-price {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-color);
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-2);
+}
+
+.currency {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
 }
 
 .price-change {
   font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-weight: var(--font-weight-semibold);
 }
 
 .price-change.positive {
@@ -76,25 +105,31 @@
 
 .price-range {
   display: flex;
-  gap: 20px;
-  justify-content: flex-end;
+  gap: var(--spacing-5);
+  justify-content: space-between;
+  background: var(--bg-color);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
 }
 
 .range-item {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  text-align: center;
+  flex: 1;
 }
 
 .range-label {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-2);
 }
 
 .range-value {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
@@ -102,8 +137,8 @@
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 24px 30px;
+  gap: var(--spacing-4);
+  padding: var(--spacing-6) var(--spacing-8);
   background: var(--bg-color);
 }
 
@@ -112,21 +147,29 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 16px;
+  padding: var(--spacing-4);
   background: var(--card-bg);
-  border-radius: 8px;
+  border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .stat-label {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-2);
+  font-weight: var(--font-weight-medium);
 }
 
 .stat-value {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
@@ -134,56 +177,61 @@
 .company-info-section {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 24px;
-  padding: 30px;
+  gap: var(--spacing-6);
+  padding: var(--spacing-8);
   border-bottom: 1px solid var(--border-color);
 }
 
 .info-card {
   background: var(--bg-color);
-  padding: 24px;
-  border-radius: 8px;
+  padding: var(--spacing-6);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
 }
 
 .info-card-title {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--spacing-4) 0;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 12px;
+  gap: var(--spacing-3);
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: var(--spacing-2) 0;
   border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+  border-bottom: none;
 }
 
 .info-label {
   font-size: 0.875rem;
   color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
 }
 
 .info-value {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--text-color);
 }
 
-.info-value.link {
-  color: var(--primary-color);
-  text-decoration: none;
+.info-value.status.active {
+  color: var(--positive-color);
 }
 
-.info-value.link:hover {
-  text-decoration: underline;
+.info-value.status.inactive {
+  color: var(--negative-color);
 }
 
 .watchlist-card {
@@ -192,21 +240,23 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-color);
-  padding: 24px;
-  border-radius: 8px;
+  padding: var(--spacing-6);
+  border-radius: var(--border-radius-lg);
   min-width: 160px;
+  border: 1px solid var(--border-color);
+  gap: var(--spacing-4);
 }
 
 .watchlist-count {
   text-align: center;
-  margin-bottom: 16px;
 }
 
 .count-number {
   display: block;
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-color);
+  margin-bottom: var(--spacing-1);
 }
 
 .count-label {
@@ -216,37 +266,47 @@
 
 .watchlist-btn {
   background: var(--primary-color);
-  color: #ffffff;
+  color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--border-radius-md);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 
 .watchlist-btn:hover {
   background: var(--primary-600);
+  transform: translateY(-1px);
+}
+
+.btn-icon {
+  font-size: 0.75rem;
 }
 
 /* Tabs Navigation */
 .tabs-navigation {
   display: flex;
   border-bottom: 1px solid var(--border-color);
-  padding: 0 30px;
+  padding: 0 var(--spacing-8);
+  background: var(--card-bg);
 }
 
 .tab-btn {
-  padding: 16px 24px;
+  padding: var(--spacing-4) var(--spacing-6);
   background: none;
   border: none;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
@@ -260,9 +320,13 @@
   background: var(--primary-100);
 }
 
+.dark-mode .tab-btn.active {
+  background: var(--neutral-700);
+}
+
 /* Tab Content */
 .tab-content {
-  padding: 30px;
+  padding: var(--spacing-8);
   min-height: 400px;
 }
 
@@ -270,495 +334,172 @@
   height: 100%;
 }
 
-.financials-tab h3,
-.news-tab h3 {
+.tab-title {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-4);
 }
 
-.loading {
+.tab-subtitle {
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-6);
+}
+
+/* Stats Details */
+.stats-details {
+  margin-top: var(--spacing-6);
+  padding: var(--spacing-4);
+  background: var(--bg-color);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.stats-title {
+  margin: 0 0 var(--spacing-3) 0;
+  color: var(--text-color);
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.stats-grid-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-3);
+}
+
+.stat-mini-item {
+  padding: var(--spacing-3);
+  background: var(--card-bg);
+  border-radius: var(--border-radius-md);
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  border: 1px solid var(--border-color);
+}
+
+.stat-mini-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.stat-mini-value {
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
+}
+
+/* Loading States */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 400px;
+  gap: var(--spacing-4);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
   font-size: 1.125rem;
   color: var(--text-muted);
 }
 
-/* Thêm vào StockDetailPage.css */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error States */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: var(--spacing-4);
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-2);
+}
 
 .error-message {
-  text-align: center;
-  padding: 40px;
   color: var(--error-500);
   font-size: 1.125rem;
+  margin-bottom: var(--spacing-4);
 }
 
-.status.active {
-  color: var(--positive-color);
-  font-weight: 600;
-}
-
-.status.inactive {
-  color: var(--negative-color);
-  font-weight: 600;
-}
-
-.stats-details {
-  margin-top: 20px;
-  padding: 16px;
-  background: var(--bg-color);
-  border-radius: 8px;
-}
-
-.stats-details h4 {
-  margin: 0 0 12px 0;
-  color: var(--text-color);
-  font-size: 1.125rem;
-}
-
-.stats-grid-mini {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.stats-grid-mini > div {
-  padding: 8px 12px;
-  background: var(--card-bg);
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: var(--text-color);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .stock-detail-page {
-    padding: 12px;
-  }
-
-  .stock-header {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 20px;
-  }
-
-  .stock-price-section {
-    text-align: left;
-  }
-
-  .price-range {
-    justify-content: space-between;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 16px 20px;
-  }
-
-  .company-info-section {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 20px;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .tabs-navigation {
-    padding: 0 20px;
-    overflow-x: auto;
-  }
-
-  .tab-btn {
-    padding: 12px 16px;
-    white-space: nowrap;
-  }
-
-  .tab-content {
-    padding: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stock-symbol {
-    font-size: 2rem;
-  }
-
-  .current-price {
-    font-size: 2rem;
-  }
-}
-.stock-detail-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.stock-detail-container {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-/* Header Section */
-.stock-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 40px;
-  padding: 30px;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-}
-
-.stock-title-section .stock-symbol {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 8px 0;
-}
-
-.stock-exchange {
-  font-size: 1.5rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.company-name {
-  font-size: 1.25rem;
-  color: #374151;
-  margin: 0 0 12px 0;
-  font-weight: 600;
-}
-
-.company-description {
-  color: #6b7280;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.stock-price-section {
-  text-align: right;
-}
-
-.current-price {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 8px;
-}
-
-.price-change {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.price-change.positive {
-  color: #10b981;
-}
-
-.price-change.negative {
-  color: #ef4444;
-}
-
-.price-range {
-  display: flex;
-  gap: 20px;
-  justify-content: flex-end;
-}
-
-.range-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.range-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 4px;
-}
-
-.range-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 24px 30px;
-  background: #f8fafc;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 16px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-/* Company Info Section */
-.company-info-section {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 24px;
-  padding: 30px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.info-card {
-  background: #f8fafc;
-  padding: 24px;
-  border-radius: 8px;
-}
-
-.info-card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 16px 0;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 12px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.info-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.info-value {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-}
-
-.info-value.link {
-  color: #3b82f6;
-  text-decoration: none;
-}
-
-.info-value.link:hover {
-  text-decoration: underline;
-}
-
-.watchlist-card {
+/* Not Found States */
+.not-found-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  padding: 24px;
-  border-radius: 8px;
-  min-width: 160px;
-}
-
-.watchlist-count {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.count-number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.count-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.watchlist-btn {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.watchlist-btn:hover {
-  background: #2563eb;
-}
-
-/* Tabs Navigation */
-.tabs-navigation {
-  display: flex;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 0 30px;
-}
-
-.tab-btn {
-  padding: 16px 24px;
-  background: none;
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7280;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-
-.tab-btn:hover {
-  color: #374151;
-  background: #f9fafb;
-}
-
-.tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-  background: #f0f9ff;
-}
-
-/* Tab Content */
-.tab-content {
-  padding: 30px;
-  min-height: 400px;
-}
-
-.overview-tab {
-  height: 100%;
-}
-
-.financials-tab h3,
-.news-tab h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 16px;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 400px;
-  font-size: 1.125rem;
-  color: #6b7280;
-}
-
-/* Thêm vào StockDetailPage.css */
-
-.error-message {
+  gap: var(--spacing-4);
   text-align: center;
-  padding: 40px;
-  color: #ef4444;
+}
+
+.not-found-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-2);
+}
+
+.not-found-message {
+  color: var(--text-muted);
   font-size: 1.125rem;
-}
-
-.status.active {
-  color: #10b981;
-  font-weight: 600;
-}
-
-.status.inactive {
-  color: #ef4444;
-  font-weight: 600;
-}
-
-.stats-details {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-}
-
-.stats-details h4 {
-  margin: 0 0 12px 0;
-  color: #374151;
-  font-size: 1.125rem;
-}
-
-.stats-grid-mini {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.stats-grid-mini > div {
-  padding: 8px 12px;
-  background: white;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #374151;
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 968px) {
   .stock-detail-page {
-    padding: 12px;
+    padding: var(--spacing-4);
   }
 
   .stock-header {
     grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 20px;
+    gap: var(--spacing-6);
+    padding: var(--spacing-6);
   }
 
   .stock-price-section {
+    min-width: auto;
+  }
+
+  .price-main {
     text-align: left;
+  }
+
+  .current-price {
+    font-size: 2rem;
   }
 
   .price-range {
     justify-content: space-between;
   }
+}
 
+@media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    padding: 16px 20px;
+    padding: var(--spacing-4);
   }
 
   .company-info-section {
     grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 20px;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6);
   }
 
   .info-grid {
@@ -766,21 +507,28 @@
   }
 
   .tabs-navigation {
-    padding: 0 20px;
+    padding: 0 var(--spacing-4);
     overflow-x: auto;
   }
 
   .tab-btn {
-    padding: 12px 16px;
-    white-space: nowrap;
+    padding: var(--spacing-3) var(--spacing-4);
   }
 
   .tab-content {
-    padding: 20px;
+    padding: var(--spacing-6);
+  }
+
+  .stats-grid-mini {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
+  .stock-detail-page {
+    padding: var(--spacing-2);
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -790,6 +538,41 @@
   }
 
   .current-price {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .price-range {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .range-item {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .stock-detail-container {
+    border: 2px solid var(--text-color);
+  }
+  
+  .stat-item,
+  .info-card,
+  .watchlist-card {
+    border: 1px solid var(--text-color);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .stat-item,
+  .watchlist-btn {
+    transition: none;
+  }
+  
+  .loading-spinner {
+    animation: none;
   }
 }

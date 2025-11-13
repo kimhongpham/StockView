@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-/**
- * User-related endpoints (no UserDetailsImpl needed)
- */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -26,9 +23,7 @@ public class UserController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    // ==========================
-    // LẤY THÔNG TIN NGƯỜI DÙNG HIỆN TẠI
-    // ==========================
+    // Lấy thông tin người dùng hiện tại
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -42,9 +37,7 @@ public class UserController {
         }
     }
 
-    // ==========================
-    // CẬP NHẬT NGƯỜI DÙNG HIỆN TẠI
-    // ==========================
+    // Cập nhật người dùng
     @PutMapping("/me")
     public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String authHeader,
                                         @Valid @RequestBody UpdateUserRequest request) {
@@ -60,9 +53,7 @@ public class UserController {
         }
     }
 
-    // ==========================
-    // WATCHLIST
-    // ==========================
+    // Cổ phiếu yêu thích
     @GetMapping("/watchlist")
     public ResponseEntity<?> getWatchlist(@RequestHeader("Authorization") String authHeader) {
         try {

@@ -9,7 +9,7 @@ import {
 } from "../../utils/api";
 
 const DashboardPage: React.FC = () => {
-  const [marketStocks, setMarketStocks] = useState<Asset[]>([]);
+  const [marketStocks] = useState<Asset[]>([]);
   const [latestPrices, setLatestPrices] = useState<Record<string, LatestPrice>>(
     {}
   );

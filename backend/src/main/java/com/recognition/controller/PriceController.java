@@ -43,6 +43,7 @@ public class PriceController {
     private final PriceService priceService;
     private final AsyncPriceService asyncPriceService;
 
+    //1. Lấy giá mới nhất theo asset
     @GetMapping("/{assetId}/latest")
     public ResponseEntity<PriceDto> getLatestPrice(@PathVariable UUID assetId) {
         log.info("Fetching latest price for asset: {}", assetId);
@@ -50,40 +51,7 @@ public class PriceController {
         return ResponseEntity.ok(latestPrice);
     }
 
-    @PostMapping("/{assetId}")
-    @Operation(summary = "Add new price", description = "Add a new price record for an asset")
-    public ResponseEntity<Price> addPrice(
-            @Parameter(description = "Asset ID") @PathVariable UUID assetId,
-            @Valid @RequestBody Price price) {
-
-        log.info("Adding new price for asset: {} with value: {}", assetId, price.getPrice());
-        Price newPrice = priceService.addPriceEntity(assetId, price);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newPrice);
-    }
-
-    @PostMapping("/{assetId}/fetch")
-    public ResponseEntity<PriceDto> fetchAndSavePrice(@PathVariable UUID assetId) {
-        log.info("Fetching and saving latest price for asset: {}", assetId);
-        PriceDto fetchedPrice = priceService.fetchAndSavePrice(assetId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(fetchedPrice);
-    }
-
-    // Khởi tạo job async
-    @PostMapping("/fetch-all/start")
-    public ResponseEntity<?> startFetchAll() {
-        String jobId = asyncPriceService.startJob();
-        return ResponseEntity.ok(Map.of(
-                "message", "Price update job started",
-                "jobId", jobId
-        ));
-    }
-
-    // Kiểm tra tiến độ
-    @GetMapping("/fetch-all/status/{jobId}")
-    public ResponseEntity<?> getStatus(@PathVariable String jobId) {
-        return ResponseEntity.ok(asyncPriceService.getJobStatus(jobId));
-    }
-
+    // 2. Lịch sử giá có phân trang
     @GetMapping("/{assetId}/history/paged")
     public ResponseEntity<Page<PriceResponse>> getPriceHistoryPaged(
             @PathVariable UUID assetId,
@@ -136,6 +104,7 @@ public class PriceController {
         return ResponseEntity.ok(page.map(this::mapToResponse));
     }
 
+    // 3. Dữ liệu biểu đồ
     @GetMapping("/{assetId}/chart")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getChart(
@@ -151,6 +120,7 @@ public class PriceController {
         ));
     }
 
+    // 4. Tính phần trăm thay đổi giá
     @GetMapping("/{assetId}/change")
     @Operation(summary = "Calculate price change", description = "Calculate the percentage change of price in a time range (hours)")
     public ResponseEntity<BigDecimal> getPriceChange(
@@ -162,20 +132,7 @@ public class PriceController {
         return ResponseEntity.ok(change);
     }
 
-    private PriceResponse mapToResponse(PriceDto dto) {
-        PriceResponse response = new PriceResponse();
-        response.setAssetId(dto.getAssetId());
-        response.setPrice(dto.getPrice());
-        response.setTimestamp(dto.getTimestamp());
-        response.setVolume(dto.getVolume());
-        response.setChangePercent(dto.getChangePercent());
-        response.setHigh24h(dto.getHigh24h());
-        response.setLow24h(dto.getLow24h());
-        response.setMarketCap(dto.getMarketCap());
-        response.setSource(dto.getSource());
-        return response;
-    }
-
+    // 5. Thống kê tổng hợp
     @GetMapping("/{assetId}/stats")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getStats(
@@ -190,6 +147,43 @@ public class PriceController {
         ));
     }
 
+    // 6. Theo giá mới thủ công
+    @PostMapping("/{assetId}")
+    @Operation(summary = "Add new price", description = "Add a new price record for an asset")
+    public ResponseEntity<Price> addPrice(
+            @Parameter(description = "Asset ID") @PathVariable UUID assetId,
+            @Valid @RequestBody Price price) {
+
+        log.info("Adding new price for asset: {} with value: {}", assetId, price.getPrice());
+        Price newPrice = priceService.addPriceEntity(assetId, price);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newPrice);
+    }
+
+    // 7. Lấy giá mới từ Finnhub
+    @PostMapping("/{assetId}/fetch")
+    public ResponseEntity<PriceDto> fetchAndSavePrice(@PathVariable UUID assetId) {
+        log.info("Fetching and saving latest price for asset: {}", assetId);
+        PriceDto fetchedPrice = priceService.fetchAndSavePrice(assetId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(fetchedPrice);
+    }
+
+    // 8. Khởi tạo job async
+    @PostMapping("/fetch-all/start")
+    public ResponseEntity<?> startFetchAll() {
+        String jobId = asyncPriceService.startJob();
+        return ResponseEntity.ok(Map.of(
+                "message", "Price update job started",
+                "jobId", jobId
+        ));
+    }
+
+    // 9. Kiểm tra tiến độ job
+    @GetMapping("/fetch-all/status/{jobId}")
+    public ResponseEntity<?> getStatus(@PathVariable String jobId) {
+        return ResponseEntity.ok(asyncPriceService.getJobStatus(jobId));
+    }
+
+    // 10. Top tăng hoặc giảm giá
     @GetMapping("/top")
     @Operation(summary = "Get top gainers or losers",
             description = "Return the top assets with highest or lowest price change percentage")
@@ -204,5 +198,20 @@ public class PriceController {
                 "count", result.size(),
                 "data", result
         ));
+    }
+
+    // 11. Chuyển PriceDto → PriceResponse
+    private PriceResponse mapToResponse(PriceDto dto) {
+        PriceResponse response = new PriceResponse();
+        response.setAssetId(dto.getAssetId());
+        response.setPrice(dto.getPrice());
+        response.setTimestamp(dto.getTimestamp());
+        response.setVolume(dto.getVolume() != null ? dto.getVolume().longValue() : null);
+        response.setChangePercent(dto.getChangePercent());
+        response.setHigh24h(dto.getHigh24h());
+        response.setLow24h(dto.getLow24h());
+        response.setMarketCap(dto.getMarketCap());
+        response.setSource(dto.getSource());
+        return response;
     }
 }

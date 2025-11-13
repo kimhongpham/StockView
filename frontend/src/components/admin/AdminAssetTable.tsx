@@ -37,7 +37,7 @@ const AssetTable: React.FC<Props> = ({ assets, onDelete, loading, sortBy, sortOr
             <th className="admin-table-th text-center" style={{ width: "60px" }}>#</th>
             <th className="admin-table-th" style={{ cursor: "pointer" }} onClick={() => onSort?.("symbol")}>Symbol {sortBy === "symbol" ? (sortOrder === "asc" ? "▲" : "▼") : ""}</th>
             <th className="admin-table-th" style={{ cursor: "pointer" }} onClick={() => onSort?.("name")}>Name {sortBy === "name" ? (sortOrder === "asc" ? "▲" : "▼") : ""}</th>
-            <th className="admin-table-th" style={{ cursor: "pointer" }} onClick={() => onSort?.("type")}>Type {sortBy === "type" ? (sortOrder === "asc" ? "▲" : "▼") : ""}</th>
+            {/* <th className="admin-table-th" style={{ cursor: "pointer" }} onClick={() => onSort?.("type")}>Type {sortBy === "type" ? (sortOrder === "asc" ? "▲" : "▼") : ""}</th> */}
             <th className="admin-table-th actions-column">Actions</th>
           </tr>
         </thead>
@@ -47,9 +47,9 @@ const AssetTable: React.FC<Props> = ({ assets, onDelete, loading, sortBy, sortOr
               <td className="admin-table-td text-center">{index + 1}</td>
               <td className="admin-table-td font-mono">{asset.symbol.toUpperCase()}</td>
               <td className="admin-table-td">{asset.name}</td>
-              <td className="admin-table-td">
+              {/* <td className="admin-table-td">
                 <span className="asset-type-badge">{asset.type}</span>
-              </td>
+              </td> */}
               <td className="admin-table-td actions-cell">
                 <div className="actions-container">
                   <button

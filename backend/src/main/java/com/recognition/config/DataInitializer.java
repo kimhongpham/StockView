@@ -27,9 +27,9 @@ public class DataInitializer {
                 admin.setUpdatedAt(OffsetDateTime.now());
 
                 userRepository.save(admin);
-                System.out.println("✅ Default admin created: username=admin, password=Admin@123");
+                System.out.println(" Default admin created: username=admin, password=Admin@123");
             } else {
-                System.out.println("ℹ️ Admin already exists, skipping...");
+                System.out.println(" Admin already exists, skipping...");
             }
         };
     }

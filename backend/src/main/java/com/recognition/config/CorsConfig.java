@@ -14,7 +14,7 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*")); // hoặc chỉ định cụ thể: "http://localhost:5173"
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -24,5 +24,4 @@ public class CorsConfig {
         return new CorsFilter(source);
     }
 
-    //Frontend: fetch("http://localhost:8080/api/assets/market/stocks")
 }

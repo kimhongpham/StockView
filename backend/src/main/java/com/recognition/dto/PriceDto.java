@@ -12,7 +12,7 @@ public class PriceDto {
 
   private BigDecimal price;
   private OffsetDateTime timestamp;
-  private Long volume;
+  private BigDecimal volume;
   private BigDecimal changePercent;
   private BigDecimal high24h;
   private BigDecimal low24h;
@@ -38,8 +38,8 @@ public class PriceDto {
   public OffsetDateTime getTimestamp() { return timestamp; }
   public void setTimestamp(OffsetDateTime timestamp) { this.timestamp = timestamp; }
 
-  public Long getVolume() { return volume; }
-  public void setVolume(Long volume) { this.volume = volume; }
+  public BigDecimal getVolume() { return volume; }
+  public void setVolume(BigDecimal volume) { this.volume = volume; }
 
   public BigDecimal getChangePercent() { return changePercent; }
   public void setChangePercent(BigDecimal changePercent) { this.changePercent = changePercent; }

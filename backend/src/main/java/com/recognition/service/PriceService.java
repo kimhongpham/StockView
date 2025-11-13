@@ -33,8 +33,6 @@ public interface PriceService {
     // Lấy giá mới nhất dạng DTO
     PriceDto getLatestPriceDto(UUID assetId);
 
-    // -------------------------
-    // Dạng entity chuyên dụng (cho internal)
     Page<Price> getPriceHistoryEntity(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable);
 
     Price addPriceEntity(UUID assetId, Price price);

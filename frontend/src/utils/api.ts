@@ -3,7 +3,14 @@ import axios from "axios";
 // Axios instance
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
-  timeout: 120000, // 120s = 2 phút
+  timeout: 120000,
+});
+
+// Interceptor thêm token tự động
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
 // Types
@@ -53,9 +60,14 @@ export interface AssetOverview {
   pbRatio: number | null;
   high24h: number | null;
   low24h: number | null;
-  marketCap: number | null;
+  marketCap_static?: number;
+  marketCap?: number;
   timestamp: string;
   source: string;
+  sharesOutstanding?: number;
+  evToEbitda?: number;
+  eps?: number;
+  bookValue?: number;
 }
 
 export interface CandleDTO {
@@ -92,10 +104,8 @@ export async function fetchPriceChart(
 
 // Lấy top giá (tăng/giảm)
 export async function fetchTopPrices(type: "gainers" | "losers", limit = 5) {
-  const res = await fetch(`http://localhost:8080/api/prices/top?limit=${limit}&type=${type}`);
-  if (!res.ok) throw new Error("Failed to fetch top prices");
-  const data = await res.json();
-  return data.data; // backend trả về { type, success, data, count }
+  const res = await api.get(`/prices/top`, { params: { limit, type } });
+  return res.data.data;
 }
 
 // Stock Page APIs
@@ -133,16 +143,14 @@ export async function fetchPriceStats(assetId: string, range = "month") {
 }
 
 // StockDetailPage APIs
-// Lấy chi tiết một asset
-export async function fetchAssetDetails(code: string): Promise<Asset> {
-  const resp = await api.get<Asset>(`/assets/${code}/details`);
-  return resp.data;
+// Thay vì gọi riêng:
+export async function fetchAssetDetails(symbol: string) {
+  return fetchAssetOverview(symbol);
 }
 
-// Lấy thông tin công ty theo symbol
-export async function fetchCompanyInfo(symbol: string): Promise<any> {
-  const resp = await api.get(`/assets/${symbol}/company`);
-  return resp.data;
+export async function fetchCompanyInfo(symbol: string) {
+  const overview = await fetchAssetOverview(symbol);
+  return { name: overview.name, description: overview.description };
 }
 
 // Lấy stats / thông số
@@ -231,6 +239,13 @@ export const removeFromWatchlist = async (symbol: string, token: string) => {
     headers: { Authorization: `Bearer ${token}` },
     data: { symbol },
   });
+};
+
+export const searchAssets = async (query: string): Promise<Asset[]> => {
+  if (!query.trim()) return [];
+  const res = await fetch(`http://localhost:8080/api/assets/search?query=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error("Search failed");
+  return res.json();
 };
 
 export default api;
