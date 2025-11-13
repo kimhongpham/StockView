@@ -1,132 +1,130 @@
-# StockView
+# StockView – Financial Market Analysis & Tracking System  
 
-> Financial market analysis & tracking system including stocks – Backend Spring Boot + Frontend React/TypeScript
+Full‑stack application for tracking and analyzing financial markets including stocks, crypto.  
+Backend: **Spring Boot (Java)** | Frontend: **React + TypeScript**  
 
-## 📌 Description
+---
 
-StockView is a full-stack project that allows users to:
+## 📌 Description  
+StockView allows users to:  
+- Register/Login (supports OAuth2 with Google)  
+- Manage assets such as stocks, crypto, and metals  
+- Retrieve real‑time price data from third‑party APIs (e.g., Finnhub)  
+- Store price history and generate charts/statistics  
+- Manage watchlists  
+- Handle authorization with user/admin roles  
+- Use a responsive frontend with modern UI and theme toggle  
 
-* Register/Login (support OAuth2 with Google)
-* Manage assets such as stocks, crypto, metals
-* Get real-time price data from 3rd parties (e.g. Finnhub)
-* Store price history, calculate statistics, charts
-* Manage watchlist
-<!-- * Alert when price exceeds threshold -->
-* Authorization (user/admin)
-* Responsive frontend with modern UI, theme toggle
+---
 
-## 🧱 Architecture
+## 🧱 Architecture  
 
-* **Backend**: Java + Spring Boot (3.x)
+**Backend** – Java + Spring Boot (3.x)  
+- Spring Web, Spring Data JPA, PostgreSQL, Redis (cache & session)  
+- Spring Security + JWT + OAuth2 (Google)  
+- RESTful API + WebSocket endpoint (`WS_URL`)  
+- External API integration: Finnhub (stocks)  
+- Logging, exception handling, Swagger UI (OpenAPI)  
 
-* Spring Web, Spring Data JPA, PostgreSQL, Redis (cache, session)
-* Spring Security + JWT + OAuth2 (Google)
-* RESTful API + simplified WebSocket (endpoint `WS_URL`)
-* External API integration: Finnhub (stocks)
-* Logging, exception handling, Swagger UI (OpenAPI)
-* **Frontend**: React + TypeScript + Vite
+**Frontend** – React + TypeScript + Vite  
+- Clear component architecture: layout, sidebar, modals, pages, store (zustand/mobx)  
+- Tables, charts, dark/light mode theme toggle  
+- UI for both user and admin (asset management)  
 
-* Clear component architecture: layout, sidebar, modals, pages, store (zustand/mobx)
-* Table, chart, theme toggle, dark/light mode
-* UI for user + admin (asset management)
-* **Database**: PostgreSQL (runs locally)
-<!-- * **Cache / Message**: Redis (data cache, rate-limit)
-* **DevOps/CI-CD**: Scalable (Docker, GitHub Actions…) -->
+**Database**  
+- PostgreSQL (runs locally)  
 
-## 🚀 Install & Run
+---
 
-### 1. Create environment variables
+## 🚀 Install & Run  
 
-Copy the sample file `.env.example` and fill in the appropriate values fit:
+### 1. Create environment variables  
+Copy `.env.example` and fill in your values
 
-```bash
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=stockview
-DB_USERNAME=postgres
-DB_PASSWORD=<your_password>
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=<your_password>
-JWT_SECRET=<your_super_secret_key>
-FINNHUB_API_KEY=<your_key>
-...
-```
+### 2. Run Backend (with Frontend Included)
 
-### 2. Backend
+The frontend is already built and included in the backend, so you only need to start the backend:
 
 ```bash
 cd backend
 ./mvnw clean package
 java -jar target/backend-1.0-SNAPSHOT.jar
 ```
+Or run in IntelliJ using Main.java.
 
-Or run in the IntelliJ IDE with `Main.java` configuration.
+Open your browser at http://localhost:8080.
 
-### 3. Frontend
+Note: The frontend is served directly by the backend. No separate development server is required.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## 🧩 Main Features  
 
-Open browser at `http://localhost:5173` (or other configuration)
+**User Features**  
+- Register/login & JWT‑based authentication  
+- OAuth2 with Google  
+- Profile and role management  
 
-### 4. Link backend + frontend
+**Asset Features**  
+- Add, delete, check existence of assets  
+- Retrieve real‑time prices and save price history  
+- View charts for stocks, crypto, metals  
+- Manage watchlist  
+- Statistics: min, max, average prices  
 
-* In `.env` frontend: `VITE_API_URL=http://localhost:8080/api`
-* CORS has been enabled in backend (`CorsConfig`) to allow origin from frontend.
+**Admin Features**  
+- Add/edit/delete assets  
+- Track new market entries  
+- API documentation via Swagger UI (`http://localhost:8080/swagger-ui.html`)  
 
-* WebSocket endpoint: `WS_URL=ws://localhost:8080/ws` if you use realtime.
+---
 
-## 🧩 Main features
+## 🧪 Testing  
+- Backend has unit and integration tests (e.g., `AuthControllerIntegrationTest.java`, `UserServiceTest.java`)  
 
-* Register/login & JWT authentication
-* OAuth2 with Google
-* User management (profile, role)
-* Asset management (Assets): add, delete, check existence
-* Get and save realtime price + price history
-* Stock/crypto/metal charts
-* Watchlist
-<!-- * Alert when price exceeds threshold, log warnings -->
-* Statistics: min, max, average price in time period
-* Admin API: add/edit/delete asset, track new market
-* API documentation via Swagger UI (`http://localhost:8080/swagger-ui.html`)
+---
 
-## 🧪 Testing
-
-* Backend has test classes: controller integration test, service test (e.g. `AuthControllerIntegrationTest.java`, `UserServiceTest.java`)
-
-## 🔧 Extend & Enhance
-
-* Deploy with Docker Compose: backend, frontend, PostgreSQL, Redis, Nginx
-* Deploy to cloud (AWS, Azure, Heroku) + CI/CD
-* Add WebSocket Module to push realtime data to client
-* Add advanced reporting module: technical analysis, machine learning
-* Integrate with Telegram notification system, email available (with environment variable in `.env`)
-* Add more powerful admin/role rights
-* Add caching with Redis, queue processing (Kafka/RabbitMQ) if volume is large
-
-## 📁 Directory structure
-
-```
+## 📁 Directory Structure  
+```text
 /backend  
-  ├─ src/main/java/com/recognition/…  
-  ├─ src/main/resources/application.properties  
-  ├─ .env  
-  ├─ pom.xml  
+├─ src/main/java/com/recognition/…  
+├─ src/main/resources/application.properties  
+├─ .env  
+├─ pom.xml  
+
 /frontend  
-  ├─ src/  
-     ├─ components/  
-     ├─ pages/  
-     ├─ store/  
-     ├─ utils/  
-  ├─ package.json  
-  ├─ vite.config.ts  
-.env.example
-```
+├─ src/components  
+├─ src/pages  
+├─ src/store  
+├─ src/utils  
+├─ package.json  
+├─ vite.config.ts  
+
+.env.example  
+````
+
+---
+## 🖼 Screenshots
+
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Stock Detail
+![Detail](docs/screenshots/detail.png)
+
+### User Profile
+![Profile](docs/screenshots/profile.png)
+
+### Favorites / Watchlist
+![Favorites](docs/screenshots/favorit.png)
+
+### Admin Panel
+![Admin](docs/screenshots/admin.png)
+
+### Stock Management
+![Stock](docs/screenshots/stock.png)
+---
 
 ## 📩 Contact
 
-If you have any problems or want to contribute, you can send me an email or open an issue on GitHub.
+If you encounter any problems or want to contribute:
+
+* Open an issue on GitHub
