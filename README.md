@@ -108,7 +108,7 @@ Note: The frontend is served directly by the backend. No separate development se
 ![Dashboard](docs/screenshots/dashboard.png)
 
 ### Stock Detail
-![Detail](docs/screenshots/detail.png)
+![Detail](docs/screenshots/Detail.png)
 
 ### User Profile
 ![Profile](docs/screenshots/profile.png)
