@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: ${DB_NAME:-stockview}-db
+    restart: always
+    environment:
+      # Lấy từ file .env. Nếu không có, dùng giá trị mặc định.
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      # Chỉ map cổng ra ngoài nếu DB_PORT được set, nếu không sẽ sử dụng cổng mặc định 5432
+      - "${DB_PORT}:5432"
+    volumes:
+      - stockview_db_data:/var/lib/postgresql/data
+      - ./db_init:/docker-entrypoint-initdb.d # SQL sẽ tự import khi container mới tạo
+
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stockview-app
+    restart: always
+    depends_on:
+      - db
+    ports:
+      # Map cổng API_URL (mặc định là 8080)
+      - "${API_PORT:-8080}:8080"
+    environment:
+      # Cấu hình Cơ sở dữ liệu: DB_HOST là "db" (tên service) trong mạng Docker
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_SSL_MODE: ${DB_SSL_MODE}
+
+      # Cấu hình JWT, OAuth, và API Keys
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY}
+
+      # Cấu hình Ứng dụng
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
+      APP_URL: ${APP_URL}
+      API_URL: ${API_URL}
+      WS_URL: ${WS_URL}
+
+      # Monitoring
+      PROMETHEUS_ENABLED: ${PROMETHEUS_ENABLED}
+      GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+
+      # Security
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE}
+
+volumes:
+  stockview_db_data:
