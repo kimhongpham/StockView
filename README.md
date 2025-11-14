@@ -36,12 +36,29 @@ StockView allows users to:
 
 ---
 
-## 🚀 Install & Run  
+Got it! Here's the **Install & Run** section rewritten in **English**, including all three ways to run the project:
 
-### 1. Create environment variables  
-Copy `.env.example` and fill in your values
+---
 
-### 2. Run Backend (with Frontend Included)
+## 🚀 Install & Run
+
+### 1️⃣ Create environment variables
+
+Copy `.env.example` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+> Important variables:
+>
+> * PostgreSQL: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+> * Finnhub API: `FINNHUB_API_KEY`
+> * OAuth2 Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
+---
+
+### 2️⃣ Run Backend (with Frontend Included)
 
 The frontend is already built and included in the backend, so you only need to start the backend:
 
@@ -50,11 +67,48 @@ cd backend
 ./mvnw clean package
 java -jar target/backend-1.0-SNAPSHOT.jar
 ```
-Or run in IntelliJ using Main.java.
 
-Open your browser at http://localhost:8080.
+Or run directly in **IntelliJ** using `Main.java`.
 
-Note: The frontend is served directly by the backend. No separate development server is required.
+Open your browser at: `http://localhost:8080`
+
+> Note: The frontend is served directly by the backend; no separate development server is required.
+
+---
+
+### 3️⃣ Run using start script (Windows/macOS/Linux)
+
+* **Windows:** double-click `start.bat`
+* **Linux/macOS:** `./start.sh` (after `chmod +x start.sh`)
+
+The script will automatically run **backend + frontend + PostgreSQL** via Docker Compose.
+
+---
+
+### 4️⃣ Run using Docker Compose (terminal)
+
+You can also run everything directly via terminal:
+
+```bash
+docker compose up --build
+```
+
+* This will start all containers: backend, frontend, PostgreSQL.
+* Access the app at: `http://localhost:8080`
+* Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+---
+
+### 5️⃣ Stop the project
+
+```bash
+docker compose down
+```
+
+This stops all containers and removes the default networks created by Docker Compose.
+
+---
+
 
 ## 🧩 Main Features  
 
