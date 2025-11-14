@@ -33,11 +33,6 @@ StockView allows users to:
 
 **Database**  
 - PostgreSQL (runs locally)  
-
----
-
-Got it! Here's the **Install & Run** section rewritten in **English**, including all three ways to run the project:
-
 ---
 
 ## 🚀 Install & Run
@@ -75,6 +70,10 @@ Open your browser at: `http://localhost:8080`
 > Note: The frontend is served directly by the backend; no separate development server is required.
 
 ---
+
+⚠️ Prerequisite
+
+Make sure Docker Desktop (Windows/macOS) or Docker Engine (Linux) is running before starting the project.
 
 ### 3️⃣ Run using start script (Windows/macOS/Linux)
 
