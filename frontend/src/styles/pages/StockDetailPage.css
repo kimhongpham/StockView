@@ -264,28 +264,21 @@
   color: var(--text-secondary);
 }
 
-.watchlist-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--border-radius-md);
-  font-size: 0.875rem;
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+.watchlist-star-container {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
+  justify-content: center;
+  padding: var(--spacing-2) 0;
 }
 
-.watchlist-btn:hover {
-  background: var(--primary-600);
-  transform: translateY(-1px);
+.watchlist-star-container .star-btn {
+  padding: var(--spacing-2);
 }
 
-.btn-icon {
-  font-size: 0.75rem;
+.watchlist-star-container .star-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.5rem;
 }
 
 /* Tabs Navigation */
@@ -568,7 +561,7 @@
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .stat-item,
-  .watchlist-btn {
+  .watchlist-star-container {
     transition: none;
   }
   

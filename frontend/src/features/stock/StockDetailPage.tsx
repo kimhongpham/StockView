@@ -7,6 +7,7 @@ import {
   AssetOverview,
 } from "../../utils/api";
 import ChartSection from "../../components/charts/ChartSection";
+import StarButton from "../../components/common/StarButton";
 import "../../styles/pages/StockDetailPage.css";
 
 const StockDetailPage: React.FC = () => {
@@ -245,7 +246,7 @@ const StockDetailPage: React.FC = () => {
             </div>
           </div>
 
-          <WatchlistCard />
+          <WatchlistCard symbol={overview.symbol} />
         </div>
 
         {/* Tabs Navigation */}
@@ -318,16 +319,14 @@ const InfoItem: React.FC<{
   </div>
 );
 
-const WatchlistCard: React.FC = () => (
+const WatchlistCard: React.FC<{ symbol: string }> = ({ symbol }) => (
   <div className="watchlist-card">
     <div className="watchlist-count">
-      <span className="count-number">-</span>
-      <span className="count-label">watchlists</span>
+      <span className="count-label">Theo dõi cổ phiếu</span>
     </div>
-    <button className="watchlist-btn">
-      <span className="btn-icon">👁️</span>
-      Theo dõi
-    </button>
+    <div className="watchlist-star-container">
+      <StarButton assetSymbol={symbol} />
+    </div>
   </div>
 );
 

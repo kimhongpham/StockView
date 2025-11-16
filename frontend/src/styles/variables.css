@@ -116,10 +116,27 @@
   --transition: var(--transition-normal);
 }
 
+
 /* ===============================
-   DARK MODE
+   AUTO DARK THEME (System Pref)
+   Only apply if no manual theme preference is set
    =============================== */
-.dark-mode {
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme]) {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 40%);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 40%);
+  }
+}
+
+/* Manual dark mode - has higher specificity and overrides system preference */
+body[data-theme="dark"],
+body.dark-mode[data-theme="dark"] {
   --primary-color: var(--primary-400);
   --accent-color: var(--primary-300);
   --secondary-color: var(--neutral-400);
@@ -130,22 +147,25 @@
   --text-muted: var(--neutral-400);
   --border-color: var(--neutral-700);
   --hover-color: var(--neutral-700);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 40%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 40%);
 }
 
-/* ===============================
-   AUTO DARK THEME (System Pref)
-   =============================== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --text-color: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --border-color: #334155;
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 40%);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 40%);
-  }
+/* Manual light mode - ensures light theme when explicitly set */
+body[data-theme="light"],
+body:not(.dark-mode)[data-theme="light"] {
+  --primary-color: var(--primary-500);
+  --accent-color: var(--primary-300);
+  --secondary-color: var(--neutral-600);
+  --bg-color: var(--neutral-50);
+  --card-bg: white;
+  --text-color: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-500);
+  --border-color: var(--neutral-200);
+  --hover-color: var(--neutral-100);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%);
 }
 
 /* ===============================
