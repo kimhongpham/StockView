@@ -1,21 +1,30 @@
 package com.recognition.controller;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.recognition.entity.Asset;
 import com.recognition.entity.Price;
 import com.recognition.exception.ResourceNotFoundException;
 import com.recognition.service.AssetService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/assets")
@@ -84,8 +93,7 @@ public class AssetController {
             assetService.deleteAsset(assetId);
             return ResponseEntity.ok(Map.of(
                     "message", "Asset deleted successfully",
-                    "assetId", assetId.toString()
-            ));
+                    "assetId", assetId.toString()));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage(), "assetId", assetId.toString()));
@@ -124,6 +132,31 @@ public class AssetController {
             log.error("Failed to fetch/save price for asset {}: {}", assetId, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body(Map.of("error", "Unable to fetch latest price", "assetId", assetId.toString()));
+        }
+    }
+
+    // 8. Fetch realtime stock info from Finnhub AND save to database
+    @PostMapping("/realtime/{symbol}/save")
+    @Operation(summary = "Fetch realtime stock and save", description = "Fetch realtime stock information from Finnhub and save price + metrics into database")
+    public ResponseEntity<?> fetchAndSaveRealtimeStock(
+            @Parameter(description = "Stock symbol (e.g., AAPL, TSLA, BTC)") @PathVariable String symbol) {
+
+        log.info("Fetching + saving REALTIME stock info for symbol: {}", symbol);
+
+        try {
+            Map<String, Object> result = assetService.fetchAndSaveRealtimeStock(symbol);
+            return ResponseEntity.ok(result);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage(), "symbol", symbol));
+
+        } catch (Exception e) {
+            log.error("Failed to fetch+save realtime stock info for {}: {}", symbol, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of(
+                            "error", "Unable to fetch or save realtime stock info",
+                            "symbol", symbol));
         }
     }
 

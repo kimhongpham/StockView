@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../../styles/pages/ProfilePage.css";
 import { useAuthStore } from "../../store/authStore";
+import { fetchCurrentUser, updateUserProfile } from "../../utils/api";
 
 const ProfilePage: React.FC = () => {
   const { user: authUser, setUser } = useAuthStore();
@@ -9,23 +10,20 @@ const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Lấy thông tin người dùng khi mount
   useEffect(() => {
     if (!authUser?.token) return;
 
-    fetch("http://localhost:8080/api/users/me", {
-      headers: {
-        Authorization: `Bearer ${authUser.token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.data) {
-          setDisplayName(data.data.username || "");
-          setEmail(data.data.email || "");
-        }
-      })
-      .catch(console.error);
+    (async () => {
+      try {
+        const token = authUser.token ?? "";
+        const data = await fetchCurrentUser(token);
+        const userInfo = data.data || data;
+        setDisplayName(userInfo.username || "");
+        setEmail(userInfo.email || "");
+      } catch (error) {
+        console.error(error);
+      }
+    })();
   }, [authUser]);
 
   // Cập nhật thông tin người dùng
@@ -39,33 +37,21 @@ const ProfilePage: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/users/me", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authUser.token}`,
-        },
-        body: JSON.stringify({
-          username: displayName,
-          email: email,
-          firstName: null,
-          lastName: null,
-          timezone: "UTC",
-          avatarUrl: null,
-        }),
+      await updateUserProfile(authUser.token, {
+        username: displayName,
+        email: email,
+        firstName: null,
+        lastName: null,
+        timezone: "UTC",
+        avatarUrl: null,
       });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.message || "Cập nhật thất bại");
 
       // Lấy lại thông tin mới
-      const meRes = await fetch("http://localhost:8080/api/users/me", {
-        headers: { Authorization: `Bearer ${authUser.token}` },
-      });
-      const meData = await meRes.json();
+      const meData = await fetchCurrentUser(authUser.token);
+      const userData = meData.data || meData;
 
-      if (meData.data) {
-        setUser({ ...authUser, ...meData.data });
+      if (userData) {
+        setUser({ ...authUser, ...userData });
       }
 
       alert("Cập nhật thông tin thành công!");
@@ -104,7 +90,7 @@ const ProfilePage: React.FC = () => {
               <input
                 type="text"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.target.value)}
                 className="profile-input"
               />
             ) : (
@@ -121,7 +107,7 @@ const ProfilePage: React.FC = () => {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 className="profile-input"
               />
             ) : (

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { fetchCurrentUser } from "../utils/api";
 
 const OAuth2RedirectHandler: React.FC = () => {
   const navigate = useNavigate();
@@ -70,15 +71,7 @@ const OAuth2RedirectHandler: React.FC = () => {
         (async () => {
           try {
             localStorage.setItem("authToken", token);
-            const meRes = await fetch("http://localhost:8080/api/users/me", {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!meRes.ok) {
-              throw new Error("Không thể lấy thông tin người dùng");
-            }
-
-            const meData = await meRes.json();
+            const meData = await fetchCurrentUser(token);
             const data = meData.data || meData;
 
             const user = {

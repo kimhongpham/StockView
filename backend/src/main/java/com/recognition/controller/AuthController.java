@@ -1,5 +1,21 @@
 package com.recognition.controller;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.recognition.config.AppConfig;
 import com.recognition.dto.request.LoginRequest;
 import com.recognition.dto.request.RegisterRequest;
 import com.recognition.dto.response.AuthResponse;
@@ -8,16 +24,8 @@ import com.recognition.repository.UserRepository;
 import com.recognition.security.JwtTokenProvider;
 import com.recognition.service.AuthService;
 import com.recognition.service.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.UUID;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Controller xử lý Authentication:
@@ -28,23 +36,24 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/auth")
-//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
-@CrossOrigin(origins = "http://localhost:8080", allowCredentials = "true")
 public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AppConfig appConfig;
 
     public AuthController(AuthService authService,
-                          UserRepository userRepository,
-                          JwtService jwtService,
-                          JwtTokenProvider jwtTokenProvider) {
+            UserRepository userRepository,
+            JwtService jwtService,
+            JwtTokenProvider jwtTokenProvider,
+            AppConfig appConfig) {
         this.authService = authService;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.appConfig = appConfig;
     }
 
     /**
@@ -80,8 +89,7 @@ public class AuthController {
     @GetMapping("/oauth2/success")
     public void oauth2Success(Authentication authentication, HttpServletResponse response) throws IOException {
         if (authentication == null || !(authentication.getPrincipal() instanceof OAuth2User)) {
-//            response.sendRedirect("http://localhost:5173/oauth2/redirect?error=NoAuthentication");
-            response.sendRedirect("http://localhost:8080/oauth2/redirect?error=NoAuthentication");
+            response.sendRedirect(appConfig.getBaseUrl() + "/oauth2/redirect?error=NoAuthentication");
             return;
         }
 
@@ -99,8 +107,7 @@ public class AuthController {
 
         String token = jwtService.generateToken(user);
         String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
-//        response.sendRedirect("http://localhost:5173/oauth2/redirect?token=" + encodedToken);
-        response.sendRedirect("http://localhost:8080/oauth2/redirect?token=" + encodedToken);
+        response.sendRedirect(appConfig.getBaseUrl() + "/oauth2/redirect?token=" + encodedToken);
     }
 
     /**

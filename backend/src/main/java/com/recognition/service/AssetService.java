@@ -1,11 +1,11 @@
 package com.recognition.service;
 
-import com.recognition.entity.Asset;
-import com.recognition.entity.Price;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.recognition.entity.Asset;
+import com.recognition.entity.Price;
 
 public interface AssetService {
 
@@ -13,6 +13,8 @@ public interface AssetService {
     List<Asset> getAllAssets();
 
     Map<String, Object> getAssetOverview(String code);
+
+    Map<String, Object> fetchAndSaveRealtimeStock(String symbol);
 
     boolean existsBySymbol(String symbol);
 

@@ -1,5 +1,22 @@
 package com.recognition.service.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.recognition.client.FinnhubClient;
 import com.recognition.dto.CandleDTO;
 import com.recognition.dto.PriceDto;
@@ -10,24 +27,9 @@ import com.recognition.exception.ResourceNotFoundException;
 import com.recognition.repository.AssetRepository;
 import com.recognition.repository.PriceRepository;
 import com.recognition.service.PriceService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public Page<Price> getPriceHistory(UUID assetId, OffsetDateTime startDate,
-                                       OffsetDateTime endDate, Pageable pageable) {
+            OffsetDateTime endDate, Pageable pageable) {
         if (!assetRepository.existsById(assetId)) {
             throw new ResourceNotFoundException("Asset not found with ID: " + assetId);
         }
@@ -83,7 +85,8 @@ public class PriceServiceImpl implements PriceService {
                 .orElseThrow(() -> new ResourceNotFoundException("No price data found"));
         Price past = priceRepository.findTopByAssetIdAndTimestampBeforeOrderByTimestampDesc(assetId, cutoffTime)
                 .orElse(current);
-        if (past.getPrice().compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+        if (past.getPrice().compareTo(BigDecimal.ZERO) == 0)
+            return BigDecimal.ZERO;
         return current.getPrice()
                 .subtract(past.getPrice())
                 .divide(past.getPrice(), 4, RoundingMode.HALF_UP)
@@ -124,14 +127,30 @@ public class PriceServiceImpl implements PriceService {
         Price previousPrice = priceRepository.findTopByAssetOrderByTimestampDesc(asset).orElse(null);
 
         BigDecimal changePercent = null;
-        if (previousPrice != null && previousPrice.getPrice() != null
+        OffsetDateTime time24hAgo = OffsetDateTime.now().minusHours(24);
+        Price price24hAgo = priceRepository
+                .findTopByAssetIdAndTimestampBeforeOrderByTimestampDesc(asset.getId(), time24hAgo)
+                .orElse(null);
+
+        if (price24hAgo != null && price24hAgo.getPrice() != null
+                && price24hAgo.getPrice().compareTo(BigDecimal.ZERO) != 0
+                && priceValue != null) {
+            BigDecimal diff = priceValue.subtract(price24hAgo.getPrice());
+            changePercent = diff
+                    .divide(price24hAgo.getPrice(), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            log.info("Change for {} (24h): {} -> {} = {}%", asset.getSymbol(), price24hAgo.getPrice(), priceValue,
+                    changePercent);
+        } else if (previousPrice != null && previousPrice.getPrice() != null
                 && previousPrice.getPrice().compareTo(BigDecimal.ZERO) != 0
                 && priceValue != null) {
+            // Fallback: nếu không có dữ liệu 24h trước, dùng giá trước đó
             BigDecimal diff = priceValue.subtract(previousPrice.getPrice());
             changePercent = diff
                     .divide(previousPrice.getPrice(), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-            log.info("Change for {}: {} -> {} = {}%", asset.getSymbol(), previousPrice.getPrice(), priceValue, changePercent);
+            log.info("Change for {} (fallback): {} -> {} = {}%", asset.getSymbol(), previousPrice.getPrice(),
+                    priceValue, changePercent);
         }
 
         // Bỏ qua nếu giá trùng nhau (tránh spam record)
@@ -162,7 +181,8 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    public Page<Price> getPriceHistoryEntity(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable) {
+    public Page<Price> getPriceHistoryEntity(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate,
+            Pageable pageable) {
         return getPriceHistory(assetId, startDate, endDate, pageable);
     }
 
@@ -193,7 +213,8 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    public Page<PriceDto> getPriceHistoryPaged(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate, Pageable pageable) {
+    public Page<PriceDto> getPriceHistoryPaged(UUID assetId, OffsetDateTime startDate, OffsetDateTime endDate,
+            Pageable pageable) {
         Page<Price> page;
 
         if (startDate != null && endDate != null) {
@@ -217,7 +238,8 @@ public class PriceServiceImpl implements PriceService {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime start;
 
-        if (interval == null || interval.isBlank()) interval = "all";
+        if (interval == null || interval.isBlank())
+            interval = "all";
 
         switch (interval.toLowerCase()) {
             case "1d", "day" -> start = now.minusDays(1);
@@ -231,7 +253,8 @@ public class PriceServiceImpl implements PriceService {
                 ? priceRepository.findByAssetIdOrderByTimestampAsc(assetId)
                 : priceRepository.findByAssetAndTimestampBetweenOrderByTimestampAsc(assetId, start, now);
 
-        if (prices.isEmpty()) return Collections.emptyList();
+        if (prices.isEmpty())
+            return Collections.emptyList();
 
         List<Price> limited = prices.size() > limit
                 ? prices.subList(prices.size() - limit, prices.size())
@@ -263,7 +286,8 @@ public class PriceServiceImpl implements PriceService {
         };
 
         List<Price> prices = priceRepository.findByAssetAndRange(assetId, start, now);
-        if (prices.isEmpty()) return new StatisticsDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, start, now);
+        if (prices.isEmpty())
+            return new StatisticsDTO(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, start, now);
 
         var min = prices.stream().map(Price::getPrice).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
         var max = prices.stream().map(Price::getPrice).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
@@ -356,8 +380,7 @@ public class PriceServiceImpl implements PriceService {
                 "message", "Fetched all prices in one call",
                 "totalAssets", assets.size(),
                 "updated", updated,
-                "failed", failed
-        );
+                "failed", failed);
     }
 
     @Override

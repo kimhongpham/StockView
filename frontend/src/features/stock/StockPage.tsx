@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AssetTable from "../../components/tables/AssetTable";
+import { useAssetStore } from "../../store/assetStore";
 
 interface AssetOverview {
   id: string;
@@ -47,6 +48,14 @@ const StockPage: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // ✅ Kiểm tra sessionStorage - nếu đã load trong session này thì dùng cache
+        const cachedAssets = sessionStorage.getItem("cachedStockPageAssets");
+        if (cachedAssets) {
+          setAssets(JSON.parse(cachedAssets));
+          setLoading(false);
+          return;
+        }
+
         const res = await axios.get("/api/assets");
         const assetList = Array.isArray(res.data)
           ? res.data
@@ -91,6 +100,8 @@ const StockPage: React.FC = () => {
         );
 
         setAssets(detailedAssets);
+        // ✅ Lưu vào sessionStorage
+        sessionStorage.setItem("cachedStockPageAssets", JSON.stringify(detailedAssets));
       } catch (err) {
         console.error("❌ Error loading assets:", err);
         setError("Không thể tải danh sách cổ phiếu.");

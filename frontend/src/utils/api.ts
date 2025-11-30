@@ -83,9 +83,8 @@ export interface CandleDTO {
 // Dash board APIs
 // Lấy giá mới nhất
 export const fetchLatestPrice = async (assetId: string) => {
-  const res = await fetch(`/api/prices/${assetId}/latest`);
-  if (!res.ok) throw new Error("Failed to fetch latest price");
-  return await res.json();
+  const res = await api.get(`/prices/${assetId}/latest`);
+  return res.data;
 };
 
 // Lấy dữ liệu biểu đồ (chart data)
@@ -94,12 +93,10 @@ export async function fetchPriceChart(
   interval: string = "1m",
   limit: number = 100
 ) {
-  const res = await fetch(
-    `/api/prices/${assetId}/chart?interval=${interval}&limit=${limit}`
-  );
-  if (!res.ok) throw new Error("Không thể tải dữ liệu biểu đồ");
-  const json = await res.json();
-  return json.data || [];
+  const res = await api.get(`/prices/${assetId}/chart`, {
+    params: { interval, limit }
+  });
+  return res.data.data || [];
 }
 
 // Lấy top giá (tăng/giảm)
@@ -166,18 +163,16 @@ export const fetchAllAssets = async (): Promise<Asset[]> => {
   return res.data;
 };
 
-// Lấy danh sách thị trường (stocks, crypto, ...)
+// Lấy danh sách thị trường
 export async function fetchNewMarketStocks() {
-  const res = await fetch("http://localhost:8080/api/assets/market/stocks/new");
-  if (!res.ok) throw new Error("Failed to fetch new market stocks");
-  return res.json();
+  const res = await api.get("/assets/market/stocks/new");
+  return res.data;
 }
 
 // Gọi backend fetch giá mới nhất + lưu DB
 export async function fetchAndSaveAssetPrice(assetId: string) {
-  const res = await fetch(`/api/prices/${assetId}/fetch`, { method: "POST" });
-  if (!res.ok) throw new Error("Failed to fetch and save asset price");
-  return res.json();
+  const res = await api.post(`/prices/${assetId}/fetch`);
+  return res.data;
 }
 
 // ========== ADMIN APIs ==========
@@ -195,19 +190,11 @@ export const getFetchAllStatus = async (jobId: string) => {
 
 // Xóa asset theo ID
 export const deleteAsset = async (assetId: string) => {
-  const res = await fetch(`/api/assets/${assetId}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.error || "Failed to delete asset");
-  }
-
-  return res.json();
+  const res = await api.delete(`/assets/${assetId}`);
+  return res.data;
 };
 
-// Lấy thay đổi giá theo giờ (ví dụ 7 ngày = 168 giờ)
+// Lấy thay đổi giá theo giờ
 export async function fetchChange(assetId: string, hours = 168): Promise<ChangeResponse> {
   const resp = await api.get<ChangeResponse>(`/prices/${assetId}/change`, {
     params: { hours },
@@ -215,27 +202,24 @@ export async function fetchChange(assetId: string, hours = 168): Promise<ChangeR
   return resp.data;
 }
 
-// Thêm biến API_URL dùng chung cho watchlist
-const API_URL = "http://localhost:8080/api/users";
-
 // ================= Watchlist APIs =================
 export const getWatchlist = async (token: string) => {
-  const res = await axios.get(`${API_URL}/watchlist`, {
+  const res = await api.get(`/users/watchlist`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data; // giả sử backend trả về array symbol
 };
 
 export const addToWatchlist = async (symbol: string, token: string) => {
-  await axios.post(
-    `${API_URL}/watchlist`,
+  await api.post(
+    `/users/watchlist`,
     { symbol },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
 
 export const removeFromWatchlist = async (symbol: string, token: string) => {
-  await axios.delete(`${API_URL}/watchlist`, {
+  await api.delete(`/users/watchlist`, {
     headers: { Authorization: `Bearer ${token}` },
     data: { symbol },
   });
@@ -243,9 +227,48 @@ export const removeFromWatchlist = async (symbol: string, token: string) => {
 
 export const searchAssets = async (query: string): Promise<Asset[]> => {
   if (!query.trim()) return [];
-  const res = await fetch(`http://localhost:8080/api/assets/search?query=${encodeURIComponent(query)}`);
-  if (!res.ok) throw new Error("Search failed");
-  return res.json();
+  const res = await api.get(`/assets/search`, { params: { query } });
+  return res.data;
+};
+
+// ================= User APIs =================
+export const fetchCurrentUser = async (token: string) => {
+  const res = await api.get(`/users/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+export interface LoginRequest {
+  usernameOrEmail: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  data?: any;
+  [k: string]: any;
+}
+
+export const loginUser = async (credentials: LoginRequest): Promise<LoginResponse> => {
+  const res = await api.post(`/auth/login`, credentials);
+  return res.data;
+};
+
+export interface UpdateUserRequest {
+  username?: string;
+  email?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  timezone?: string;
+  avatarUrl?: string | null;
+}
+
+export const updateUserProfile = async (token: string, data: UpdateUserRequest) => {
+  const res = await api.put(`/users/me`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
 };
 
 export default api;

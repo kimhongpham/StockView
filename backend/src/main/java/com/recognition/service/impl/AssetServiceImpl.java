@@ -1,5 +1,22 @@
 package com.recognition.service.impl;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.recognition.client.FinnhubClient;
 import com.recognition.dto.PriceDto;
 import com.recognition.entity.Asset;
@@ -9,17 +26,9 @@ import com.recognition.repository.AssetRepository;
 import com.recognition.repository.PriceRepository;
 import com.recognition.service.AssetService;
 import com.recognition.service.PriceService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +44,98 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public List<Asset> getAllAssets() {
         return assetRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> fetchAndSaveRealtimeStock(String symbol) {
+        log.info("Fetching realtime info AND saving to database for symbol: {}", symbol);
+
+        // 1. Lấy dữ liệu từ Finnhub (giá + metrics)
+        BigDecimal currentPrice = finnhubClient.fetchPrice(symbol);
+        Map<String, Object> metrics = finnhubClient.fetchStockMetrics(symbol);
+
+        if (currentPrice == null) {
+            throw new ResourceNotFoundException("Cannot fetch realtime price for symbol: " + symbol);
+        }
+
+        // 2. Tìm asset trong DB
+        Asset asset = assetRepository.findBySymbolIgnoreCase(symbol)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + symbol));
+
+        // 3. Lưu giá vào bảng PRICE
+        Price price = Price.builder()
+                .asset(asset)
+                .price(currentPrice)
+                .timestamp(OffsetDateTime.now(ZoneOffset.UTC))
+                .source("Finnhub")
+                .build();
+        priceRepository.save(price);
+
+        // 4. Kiểm tra và cập nhật chỉ những trường bị thiếu
+        if (metrics != null && !metrics.isEmpty()) {
+            boolean needsUpdate = false;
+
+            BigDecimal marketCap = toBigDecimal(metrics.get("marketCapitalization"));
+            if (marketCap != null && asset.getMarketCap() == null) {
+                asset.setMarketCap(marketCap);
+                needsUpdate = true;
+                log.debug("Saving missing marketCap for {}", symbol);
+            }
+
+            BigDecimal peRatio = toBigDecimal(metrics.get("peNormalizedAnnual"));
+            if (peRatio != null && asset.getPeRatio() == null) {
+                asset.setPeRatio(peRatio);
+                needsUpdate = true;
+                log.debug("Saving missing peRatio for {}", symbol);
+            }
+
+            BigDecimal pbRatio = toBigDecimal(metrics.get("pbAnnual"));
+            if (pbRatio != null && asset.getPbRatio() == null) {
+                asset.setPbRatio(pbRatio);
+                needsUpdate = true;
+                log.debug("Saving missing pbRatio for {}", symbol);
+            }
+
+            BigDecimal eps = toBigDecimal(metrics.get("epsAnnual"));
+            if (eps != null && asset.getEps() == null) {
+                asset.setEps(eps);
+                needsUpdate = true;
+                log.debug("Saving missing eps for {}", symbol);
+            }
+
+            BigDecimal bookValue = toBigDecimal(metrics.get("bookValuePerShareAnnual"));
+            if (bookValue != null && asset.getBookValue() == null) {
+                asset.setBookValue(bookValue);
+                needsUpdate = true;
+                log.debug("Saving missing bookValue for {}", symbol);
+            }
+
+            BigDecimal evToEbitda = toBigDecimal(metrics.get("evToEbitdaAnnual"));
+            if (evToEbitda != null && asset.getEvToEbitda() == null) {
+                asset.setEvToEbitda(evToEbitda);
+                needsUpdate = true;
+                log.debug("Saving missing evToEbitda for {}", symbol);
+            }
+
+            if (needsUpdate) {
+                assetRepository.save(asset);
+                log.info("Asset {} updated with missing metrics", symbol);
+            } else {
+                log.info("No missing metrics to update for {}", symbol);
+            }
+        }
+
+        // 5. Build response
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("symbol", symbol);
+        result.put("savedPrice", price);
+        result.put("updatedAsset", asset);
+        result.put("source", "Finnhub API (Realtime)");
+        result.put("savedAt", OffsetDateTime.now(ZoneOffset.UTC));
+
+        log.info("Realtime stock saved successfully for {}", symbol);
+        return result;
     }
 
     @Override
@@ -78,7 +179,6 @@ public class AssetServiceImpl implements AssetService {
             result.put("source", "Database (no price yet)");
         }
 
-// 🔹 Bổ sung thêm metrics từ Asset
         result.put("marketCap_static", asset.getMarketCap());
         result.put("peRatio", asset.getPeRatio());
         result.put("pbRatio", asset.getPbRatio());
@@ -180,8 +280,7 @@ public class AssetServiceImpl implements AssetService {
                                 .symbol(symbol)
                                 .description(stock.getOrDefault("type", "").toString())
                                 .isActive(true)
-                                .build()
-                ));
+                                .build()));
 
         // ✅ Lấy thêm metrics từ Finnhub (nếu có)
         Map<String, Object> metrics = finnhubClient.fetchStockMetrics(symbol);
@@ -257,7 +356,8 @@ public class AssetServiceImpl implements AssetService {
     }
 
     private BigDecimal toBigDecimal(Object value) {
-        if (value == null) return null;
+        if (value == null)
+            return null;
 
         return switch (value) {
             case BigDecimal bd -> bd;

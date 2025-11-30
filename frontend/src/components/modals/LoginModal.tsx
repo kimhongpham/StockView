@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
+import { loginUser, fetchCurrentUser } from "../../utils/api";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -32,38 +33,28 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const loginRes = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usernameOrEmail: usernameOrEmail.trim(),
-          password: password.trim(),
-        }),
+      const loginData = await loginUser({
+        usernameOrEmail: usernameOrEmail.trim(),
+        password: password.trim(),
       });
 
-      const loginData = await loginRes.json();
-
-      if (!loginRes.ok || !loginData.token) {
+      if (!loginData.token) {
         throw new Error(loginData.message || "Đăng nhập thất bại");
       }
 
       const token = loginData.token;
       localStorage.setItem("authToken", token);
 
-      const meRes = await fetch("http://localhost:8080/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const userData = await fetchCurrentUser(token);
+      const data = userData.data || userData;
 
-      if (!meRes.ok) throw new Error("Không thể lấy thông tin người dùng");
-
-      const userData = await meRes.json();
       const user = {
-        id: userData.data.id,
-        username: userData.data.username,
-        name: userData.data.username,
-        role: userData.data.role,
-        email: userData.data.email,
-        avatar: userData.data.avatarUrl || `https://i.pravatar.cc/150?u=${userData.data.email}`,
+        id: data.id,
+        username: data.username,
+        name: data.username,
+        role: data.role,
+        email: data.email,
+        avatar: data.avatarUrl || `https://i.pravatar.cc/150?u=${data.email}`,
         token,
       };
 
