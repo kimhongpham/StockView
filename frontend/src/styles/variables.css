@@ -1,52 +1,60 @@
 /* ===============================
-   GLOBAL DESIGN SYSTEM
+   APPLE-INSPIRED DESIGN SYSTEM
+   Minimal, Clean, Professional
    =============================== */
 
-/* Import font từ Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Import modern fonts from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   /* ===============================
-     COLOR PALETTE
+     COLOR PALETTE - Apple Inspired
+     Neutral grays, subtle accents
      =============================== */
-  /* Primary */
-  --primary-100: #ebf5ff;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
+  
+  /* Primary - Subtle Blue (Finance-friendly) */
+  --primary-50: #f0f7ff;
+  --primary-100: #e0eff9;
+  --primary-200: #bae1f5;
+  --primary-300: #7ec5f1;
+  --primary-400: #3da8ea;
+  --primary-500: #0080d0;
+  --primary-600: #0066b3;
+  --primary-700: #004d85;
 
-  /* Neutral / Gray Scale */
-  --neutral-50: #f9fafb;
+  /* Neutral / Gray Scale - Clean & Minimal */
+  --neutral-0: #ffffff;
+  --neutral-50: #f8f9fa;
   --neutral-100: #f3f4f6;
-  --neutral-200: #e5e7eb;
+  --neutral-200: #e8eaed;
   --neutral-300: #d1d5db;
   --neutral-400: #9ca3af;
   --neutral-500: #6b7280;
   --neutral-600: #4b5563;
   --neutral-700: #374151;
   --neutral-800: #1f2937;
-  --neutral-900: #111827;
+  --neutral-900: #0f1419;
 
-  /* Semantic */
+  /* Semantic Colors - Financial Accuracy */
+  --success-50: #f0fdf4;
   --success-100: #dcfce7;
-  --success-500: #22c55e;
+  --success-500: #16a34a;
   --success-700: #15803d;
+  --warning-50: #fefce8;
   --warning-100: #fef3c7;
-  --warning-500: #f59e0b;
+  --warning-500: #ea8c00;
   --warning-700: #b45309;
+  --error-50: #fef2f2;
   --error-100: #fee2e2;
-  --error-500: #ef4444;
+  --error-500: #dc2626;
   --error-700: #b91c1c;
 
   /* ===============================
-     THEME TOKENS
+     THEME TOKENS - Minimal & Neutral
      =============================== */
   --primary-color: var(--primary-500);
   --secondary-color: var(--neutral-600);
-  --accent-color: var(--primary-300);
+  --accent-color: var(--primary-200);
   --bg-color: var(--neutral-50);
   --card-bg: white;
   --text-color: var(--neutral-900);
@@ -80,26 +88,32 @@
   --spacing-12: 3rem;    /* 48px */
 
   /* ===============================
-     BORDER RADIUS
+     BORDER RADIUS - Subtle Curves
+     Apple style: slightly rounded
      =============================== */
-  --border-radius-sm: 0.375rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 0.75rem;
-  --border-radius-xl: 1rem;
+  --border-radius-xs: 0.25rem;    /* 4px */
+  --border-radius-sm: 0.375rem;   /* 6px */
+  --border-radius-md: 0.5rem;     /* 8px */
+  --border-radius-lg: 0.75rem;    /* 12px */
+  --border-radius-xl: 1rem;       /* 16px */
   --border-radius-full: 9999px;
 
   /* ===============================
-     SHADOWS
+     SHADOWS - Minimal & Subtle
+     Inspired by Apple's subtle depth
      =============================== */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%);
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 3%);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 6%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 8%);
+  --shadow-lg: 0 12px 24px rgb(0 0 0 / 10%);
+  --shadow-xl: 0 20px 40px rgb(0 0 0 / 12%);
 
   /* ===============================
-     TYPOGRAPHY
+     TYPOGRAPHY - Apple San Francisco Inspired
      =============================== */
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  --font-family-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
   --font-weight-normal: 400;
@@ -108,55 +122,61 @@
   --font-weight-bold: 700;
 
   /* ===============================
-     TRANSITIONS
+     TRANSITIONS - Smooth & Apple-like
      =============================== */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.6, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.6, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.6, 1);
   --transition: var(--transition-normal);
 }
 
 
 /* ===============================
-   AUTO DARK THEME (System Pref)
-   Only apply if no manual theme preference is set
+   AUTO DARK THEME (System Preference)
+   Only apply if no manual theme
    =============================== */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme]) {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --text-color: #f1f5f9;
+    --primary-color: var(--primary-300);
+    --secondary-color: var(--neutral-400);
+    --accent-color: var(--primary-200);
+    --bg-color: #0f1419;
+    --card-bg: #1a1f2e;
+    --text-color: #f8f9fa;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
-    --border-color: #334155;
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 40%);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 40%);
+    --border-color: #2d3748;
+    --hover-color: #2d3748;
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 20%);
+    --shadow-md: 0 4px 12px rgb(0 0 0 / 30%);
+    --shadow-lg: 0 12px 24px rgb(0 0 0 / 40%);
   }
 }
 
-/* Manual dark mode - has higher specificity and overrides system preference */
+/* Manual dark mode */
 body[data-theme="dark"],
-body.dark-mode[data-theme="dark"] {
-  --primary-color: var(--primary-400);
-  --accent-color: var(--primary-300);
+body.dark-mode {
+  --primary-color: var(--primary-300);
   --secondary-color: var(--neutral-400);
-  --bg-color: var(--neutral-900);
-  --card-bg: var(--neutral-800);
-  --text-color: #ffffff;
-  --text-secondary: var(--neutral-300);
-  --text-muted: var(--neutral-400);
-  --border-color: var(--neutral-700);
-  --hover-color: var(--neutral-700);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 40%);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 40%);
+  --accent-color: var(--primary-200);
+  --bg-color: #0f1419;
+  --card-bg: #1a1f2e;
+  --text-color: #f8f9fa;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #2d3748;
+  --hover-color: #2d3748;
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 20%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 30%);
+  --shadow-lg: 0 12px 24px rgb(0 0 0 / 40%);
 }
 
-/* Manual light mode - ensures light theme when explicitly set */
+/* Manual light mode - override any system preference */
 body[data-theme="light"],
-body:not(.dark-mode)[data-theme="light"] {
+body:not(.dark-mode) {
   --primary-color: var(--primary-500);
-  --accent-color: var(--primary-300);
   --secondary-color: var(--neutral-600);
+  --accent-color: var(--primary-200);
   --bg-color: var(--neutral-50);
   --card-bg: white;
   --text-color: var(--neutral-900);
@@ -164,8 +184,6 @@ body:not(.dark-mode)[data-theme="light"] {
   --text-muted: var(--neutral-500);
   --border-color: var(--neutral-200);
   --hover-color: var(--neutral-100);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%);
 }
 
 /* ===============================

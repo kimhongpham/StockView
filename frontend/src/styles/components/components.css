@@ -1,43 +1,52 @@
-/* Modern Component System */
+/* ===============================
+   COMPONENT STYLES - Minimal Professional
+   Cards, tables, charts, status badges
+   =============================== */
 
-/* KPI Cards */
+/* ========== KPI CARDS ========== */
 .kpi-card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-6);
   transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
 }
 
 .kpi-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  border-color: var(--primary-200);
 }
 
 .kpi-title {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-2);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-3);
   font-weight: var(--font-weight-medium);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 
 .kpi-value {
-  font-size: 1.875rem;
+  font-size: 2.125rem;
   font-weight: var(--font-weight-bold);
   color: var(--text-color);
-  line-height: 1.2;
-  margin-bottom: var(--spacing-2);
+  line-height: 1.1;
+  margin-bottom: var(--spacing-3);
+  letter-spacing: -0.02em;
 }
 
 .kpi-change {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1);
+  gap: var(--spacing-2);
   font-size: 0.875rem;
   font-weight: var(--font-weight-medium);
 }
 
-/* Chart Components */
+/* ========== CHART CONTAINERS ========== */
 .chart-container {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -50,20 +59,23 @@
 .chart-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: var(--spacing-6);
+  gap: var(--spacing-4);
 }
 
 .chart-title {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: var(--font-weight-semibold);
   color: var(--text-color);
+  letter-spacing: -0.01em;
 }
 
 .chart-legend {
   display: flex;
   gap: var(--spacing-4);
   font-size: 0.875rem;
+  flex-wrap: wrap;
 }
 
 .legend-item {
@@ -71,15 +83,17 @@
   align-items: center;
   gap: var(--spacing-2);
   color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
 }
 
 .legend-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
-/* Table Components */
+/* ========== DATA TABLES ========== */
 .data-table {
   width: 100%;
   border-collapse: separate;
@@ -93,18 +107,26 @@
 .data-table th {
   background-color: var(--bg-color);
   padding: var(--spacing-4);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .data-table td {
   padding: var(--spacing-4);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--text-color);
   border-bottom: 1px solid var(--border-color);
+  font-weight: var(--font-weight-normal);
+}
+
+.data-table tbody tr {
+  transition: background-color var(--transition-fast);
 }
 
 .data-table tbody tr:hover {
@@ -115,26 +137,29 @@
   border-bottom: none;
 }
 
-/* Status Indicators */
+/* ========== STATUS BADGES ========== */
 .status {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-1) var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--border-radius-full);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: var(--font-weight-medium);
+  white-space: nowrap;
 }
 
 .status-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .status-success {
-  background-color: var(--success-100);
+  background-color: var(--success-50);
   color: var(--success-700);
+  border: 1px solid var(--success-100);
 }
 
 .status-success .status-dot {
@@ -142,8 +167,9 @@
 }
 
 .status-warning {
-  background-color: var(--warning-100);
+  background-color: var(--warning-50);
   color: var(--warning-700);
+  border: 1px solid var(--warning-100);
 }
 
 .status-warning .status-dot {
@@ -151,24 +177,38 @@
 }
 
 .status-error {
-  background-color: var(--error-100);
+  background-color: var(--error-50);
   color: var(--error-700);
+  border: 1px solid var(--error-100);
 }
 
 .status-error .status-dot {
   background-color: var(--error-500);
 }
 
-/* Value States */
+.status-neutral {
+  background-color: var(--neutral-100);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* ========== TEXT VALUE STATES ========== */
 .positive {
   color: var(--success-500);
+  font-weight: var(--font-weight-medium);
 }
 
 .negative {
   color: var(--error-500);
+  font-weight: var(--font-weight-medium);
 }
 
-/* Dropdown Menu */
+.neutral {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+/* ========== DROPDOWN MENUS ========== */
 .dropdown {
   position: relative;
 }
@@ -183,7 +223,7 @@
   padding: var(--spacing-2);
   min-width: 200px;
   box-shadow: var(--shadow-lg);
-  animation: slideDown var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideDown var(--transition-normal);
   z-index: 10;
 }
 
@@ -193,95 +233,160 @@
   gap: var(--spacing-3);
   padding: var(--spacing-2) var(--spacing-3);
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .dropdown-item:hover {
   background-color: var(--hover-color);
+  color: var(--primary-color);
 }
 
-/* Animations */
+.dropdown-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== ANIMATIONS ========== */
 @keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-var(--spacing-2));
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Responsive */
-@media (width <= 768px) {
-  .kpi-value {
-    font-size: 1.5rem;
-  }
-  
-  .chart-container {
-    padding: var(--spacing-4);
-  }
-  
-  .data-table th,
-  .data-table td {
-    padding: var(--spacing-3);
-  }
-  
-  .chart-legend {
-    flex-wrap: wrap;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@media (width <= 480px) {
-  .kpi-card {
-    padding: var(--spacing-4);
-  }
-  
-  .data-table {
-    font-size: 0.75rem;
-  }
-  
-  .dropdown-content {
-    min-width: 160px;
-  }
-}
-
-/* Star / Watchlist button styles */
+/* ========== STAR / WATCHLIST BUTTON ========== */
 .star-btn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.125rem;
+  padding: var(--spacing-2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+}
+
+.star-btn:hover {
+  background-color: var(--hover-color);
 }
 
 .star-icon {
-  width: 1.125rem; /* 18px */
-  height: 1.125rem;
+  width: 18px;
+  height: 18px;
   color: var(--text-secondary);
-  transition: transform var(--transition-fast), filter var(--transition-fast), color var(--transition-fast);
-  /* subtle shadow to improve contrast on very light backgrounds */
-  filter: drop-shadow(0 0 1px rgba(0,0,0,0.18));
+  transition: all var(--transition-fast);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.1));
 }
 
 .star-btn:hover .star-icon {
-  transform: scale(1.08);
+  transform: scale(1.12);
+  color: var(--warning-500);
 }
 
 .star-icon.filled {
-  color: var(--warning-500); /* gold/orange token */
-  /* stronger dark drop-shadow gives the star a thin visible edge on light backgrounds */
-  filter: drop-shadow(0 0 2px rgba(0,0,0,0.35));
+  color: var(--warning-500);
+  filter: drop-shadow(0 0 2px rgba(234, 140, 0, 0.4));
 }
 
-.dark-mode .star-icon.filled {
-  /* slightly different shadow in dark mode so it doesn't glow too much */
-  color: var(--warning-500);
-  filter: drop-shadow(0 0 2px rgba(0,0,0,0.6));
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1024px) {
+  .kpi-value {
+    font-size: 1.875rem;
+  }
+
+  .chart-container {
+    padding: var(--spacing-5);
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .data-table {
+    font-size: 0.875rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: var(--spacing-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .kpi-card {
+    padding: var(--spacing-5);
+  }
+
+  .kpi-value {
+    font-size: 1.625rem;
+  }
+
+  .chart-container {
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .chart-title {
+    font-size: 1rem;
+  }
+
+  .data-table {
+    font-size: 0.8125rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+
+  .chart-legend {
+    gap: var(--spacing-3);
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-card {
+    padding: var(--spacing-4);
+  }
+
+  .kpi-title {
+    font-size: 0.75rem;
+  }
+
+  .kpi-value {
+    font-size: 1.375rem;
+  }
+
+  .data-table {
+    font-size: 0.75rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: var(--spacing-2);
+  }
+
+  .dropdown-content {
+    min-width: 160px;
+  }
+
+  .status {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: 0.75rem;
+  }
 }

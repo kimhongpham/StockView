@@ -15,38 +15,30 @@ const StockTable: React.FC<StockTableProps> = ({
   prices,
   onSelect,
 }) => (
-  <div
-    style={{
-      background: "var(--card-bg)",
-      borderRadius: 12,
-      padding: 20,
-      boxShadow: "var(--shadow-sm)",
-      transition: "0.3s",
-    }}
-  >
-    <h2
-      style={{
-        marginBottom: 15,
-        fontSize: 16,
-        fontWeight: 600,
-        color: "var(--text-color)",
-      }}
-    >
+  <div className="data-table-container" style={{
+    background: "var(--card-bg)",
+    borderRadius: "var(--border-radius-lg)",
+    padding: "var(--spacing-6)",
+    boxShadow: "var(--shadow-sm)",
+    border: "1px solid var(--border-color)",
+    transition: "all var(--transition-normal)",
+  }}>
+    <h2 style={{
+      marginBottom: "var(--spacing-6)",
+      fontSize: "1.1rem",
+      fontWeight: "var(--font-weight-semibold)",
+      color: "var(--text-color)",
+      letterSpacing: "-0.01em",
+    }}>
       {title}
     </h2>
 
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <table className="data-table" style={{ width: "100%" }}>
       <thead>
-        <tr style={{ borderBottom: "1px solid var(--border-color)" }}>
-          <th style={{ padding: 10, textAlign: "left", color: "var(--text-muted)" }}>
-            Mã
-          </th>
-          <th style={{ padding: 10, textAlign: "right", color: "var(--text-muted)" }}>
-            % thay đổi
-          </th>
-          <th style={{ padding: 10, textAlign: "right", color: "var(--text-muted)" }}>
-            Khối lượng
-          </th>
+        <tr>
+          <th>Symbol</th>
+          <th style={{ textAlign: "right" }}>Change %</th>
+          <th style={{ textAlign: "right" }}>Volume</th>
         </tr>
       </thead>
 
@@ -62,40 +54,48 @@ const StockTable: React.FC<StockTableProps> = ({
               key={stock.id}
               onClick={() => onSelect(stock.symbol)}
               style={{
-                borderBottom: "1px solid var(--border-color)",
                 cursor: "pointer",
-                transition: "background 0.2s",
+                transition: "background-color var(--transition-fast)",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "var(--hover-color)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
             >
-              <td style={{ padding: 10, fontWeight: 500 }}>{stock.symbol}</td>
+              <td style={{ fontWeight: "var(--font-weight-medium)" }}>
+                {stock.symbol}
+              </td>
 
               <td
                 style={{
-                  padding: 10,
                   textAlign: "right",
                   color,
-                  fontWeight: 500,
+                  fontWeight: "var(--font-weight-medium)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "flex-end",
-                  gap: 4,
+                  gap: "var(--spacing-2)",
                 }}
               >
-                <Icon size={14} />
+                <Icon size={16} />
                 {change >= 0 ? "+" : ""}
                 {change.toFixed(2)}%
+              </td>
+
+              <td style={{ textAlign: "right", color: "var(--text-secondary)" }}>
+                {price?.volume ? `${(price.volume / 1000000).toFixed(2)}M` : "-"}
               </td>
             </tr>
           );
         })}
       </tbody>
     </table>
+
+    {stocks.length === 0 && (
+      <div style={{
+        textAlign: "center",
+        padding: "var(--spacing-6)",
+        color: "var(--text-muted)",
+      }}>
+        No data available
+      </div>
+    )}
   </div>
 );
 

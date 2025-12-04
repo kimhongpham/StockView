@@ -25,6 +25,9 @@ export const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
     ];
 
     const filteredMenuItems = allMenuItems.filter(item => {
+      // Hide wallet/portfolio feature (backend not implemented)
+      if (item.id === 'wallet') return false;
+      
       // If not logged in, only show guest accessible items
       if (!isLoggedIn) {
         return item.roles.includes('guest');

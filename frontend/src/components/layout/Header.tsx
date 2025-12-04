@@ -51,16 +51,17 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuToggle, onLo
 
         <div className="header-logo flex items-center gap-2">
           <img src="/logo.png" alt="StockView Logo" className="h-8 w-8 object-contain" />
-          <span className="text-xl font-semibold tracking-wide">StockView</span>
+          <span>StockView</span>
         </div>
       </div>
 
       {/* Center section - Search bar */}
       <div className="header-center">
         <div className="search-bar flex items-center">
+          <Search className="w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm kiếm cổ phiếu, mã chứng khoán..."
+            placeholder="Search..."
             className="search-input"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -68,13 +69,6 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuToggle, onLo
               if (e.key === 'Enter') handleSearch()
             }}
           />
-          <button
-            className="search-btn"
-            onClick={handleSearch}
-            aria-label="Search stock"
-          >
-            <Search className="w-5 h-5 text-gray-500" />
-          </button>
         </div>
       </div>
 
@@ -82,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuToggle, onLo
       <div className="header-controls flex items-center gap-4">
         <button className="icon-btn notification-btn relative" aria-label="Notifications">
           <Bell className="w-5 h-5" />
-          <span className="notification-badge absolute top-0 right-0 rounded-full bg-red-500 text-white text-xs px-1">3</span>
+          <span className="notification-badge">3</span>
         </button>
 
         <ThemeToggle />
@@ -92,13 +86,13 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuToggle, onLo
             {user?.avatar ? (
               <img src={user.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
             ) : (
-              <UserCircle2 className="w-8 h-8 text-primary" />
+              <UserCircle2 className="w-8 h-8" />
             )}
           </div>
 
           <div className="user-info flex flex-col text-sm">
-            <div className="user-name">{user?.username || 'Khách'}</div>
-            <div className="user-role">{user?.role || 'Vui lòng đăng nhập'}</div>
+            <div className="user-name">{user?.username || 'Guest'}</div>
+            <div className="user-role">{user?.role || 'Sign in'}</div>
           </div>
 
           <button
@@ -108,12 +102,12 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuToggle, onLo
             {isLoggedIn ? (
               <>
                 <LogOut className="w-4 h-4" />
-                <span className="auth-text">Đăng xuất</span>
+                <span className="auth-text">Sign out</span>
               </>
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
-                <span className="auth-text">Đăng nhập</span>
+                <span className="auth-text">Sign in</span>
               </>
             )}
           </button>

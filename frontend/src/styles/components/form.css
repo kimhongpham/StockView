@@ -1,16 +1,26 @@
-/* Modern Form Elements */
+/* ===============================
+   FORM STYLES - Clean & Minimal
+   Modern form elements with focus states
+   =============================== */
+
+/* Form Groups */
 .form-group {
   margin-bottom: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
 }
 
+/* Form Labels */
 .form-group label {
   display: block;
-  margin-bottom: var(--spacing-2);
   color: var(--text-color);
   font-weight: var(--font-weight-medium);
   font-size: 0.875rem;
+  letter-spacing: 0.01em;
 }
 
+/* Form Inputs */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -18,29 +28,56 @@
   padding: var(--spacing-3) var(--spacing-4);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--border-color);
-  background-color: var(--bg-color);
+  background-color: var(--card-bg);
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
   transition: all var(--transition-fast);
+  line-height: 1.5;
 }
 
+/* Focus State */
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-100);
+  box-shadow: 0 0 0 2px var(--primary-100);
+  background-color: var(--card-bg);
 }
 
-.dark-mode .form-group input:focus,
-.dark-mode .form-group select:focus,
-.dark-mode .form-group textarea:focus {
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 20%);
-}
-
+/* Placeholder */
 .form-group input::placeholder,
 .form-group textarea::placeholder {
   color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+/* Disabled State */
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--hover-color);
+}
+
+/* Error State */
+.form-group input.error,
+.form-group textarea.error {
+  border-color: var(--error-500);
+}
+
+.form-group input.error:focus,
+.form-group textarea.error:focus {
+  box-shadow: 0 0 0 2px var(--error-50);
+}
+
+.form-error {
+  color: var(--error-500);
+  font-size: 0.8125rem;
+  margin-top: var(--spacing-1);
+  font-weight: var(--font-weight-medium);
 }
 
 /* Form Layout */
@@ -57,14 +94,16 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* Form Actions */
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-3);
   margin-top: var(--spacing-8);
+  flex-wrap: wrap;
 }
 
-/* Modern Buttons */
+/* Button Styles */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -72,23 +111,27 @@
   gap: var(--spacing-2);
   padding: var(--spacing-3) var(--spacing-6);
   border-radius: var(--border-radius-md);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: var(--font-weight-medium);
-  line-height: 1.25rem;
   cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
+  border: none;
+  font-family: inherit;
 }
 
+/* Primary Button */
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
-  border: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
   background-color: var(--primary-600);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
@@ -96,88 +139,95 @@
   transform: translateY(0);
 }
 
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary Button */
 .btn-secondary {
-  background-color: var(--bg-color);
+  background-color: var(--hover-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
 }
 
-.btn-secondary:hover {
-  background-color: var(--hover-color);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--border-color);
   border-color: var(--text-muted);
 }
 
-.btn-outline {
+/* Ghost Button */
+.btn-ghost {
   background-color: transparent;
-  border: 2px solid var(--primary-color);
   color: var(--primary-color);
+  border: 1px solid var(--border-color);
 }
 
-.btn-outline:hover {
-  background-color: var(--primary-100);
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--primary-50);
+  border-color: var(--primary-color);
 }
 
-.dark-mode .btn-outline:hover {
-  background-color: rgb(59 130 246 / 10%);
-}
-
-.btn-google {
-  background-color: rgb(66 133 244);
+/* Danger Button */
+.btn-danger {
+  background-color: var(--error-500);
   color: white;
-  border: none;
-  padding-left: var(--spacing-4);
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-google:hover {
-  background-color: rgb(51 103 214);
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--error-700);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
-.btn-icon {
-  padding: var(--spacing-2);
-  border-radius: var(--border-radius-md);
-}
-
-.btn:disabled {
-  opacity: 0.7;
+.btn-danger:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Button Loading State */
-.btn-loading {
-  position: relative;
-  cursor: wait;
+/* Small Button */
+.btn-sm {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: 0.8125rem;
 }
 
-.btn-loading .btn-text {
-  opacity: 0;
+/* Large Button */
+.btn-lg {
+  padding: var(--spacing-4) var(--spacing-8);
+  font-size: 1rem;
 }
 
-.btn-loading::after {
-  content: "";
-  position: absolute;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  border-top-color: currentcolor;
-  animation: spin 0.6s linear infinite;
+/* Full Width Button */
+.btn-full {
+  width: 100%;
 }
 
-/* spin keyframes consolidated in base.css */
+/* Checkbox & Radio */
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
 
-/* Responsive */
-@media (width <= 768px) {
+/* Select */
+.form-group select {
+  cursor: pointer;
+}
+
+/* Responsive Forms */
+@media (max-width: 768px) {
   .form-grid-2,
   .form-grid-3 {
     grid-template-columns: 1fr;
   }
 
   .form-actions {
-    flex-direction: column;
+    justify-content: stretch;
   }
-  
-  .btn {
-    width: 100%;
+
+  .form-actions .btn {
+    flex: 1;
   }
 }
