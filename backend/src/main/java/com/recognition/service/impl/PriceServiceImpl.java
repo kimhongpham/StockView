@@ -26,6 +26,7 @@ import com.recognition.entity.Price;
 import com.recognition.exception.ResourceNotFoundException;
 import com.recognition.repository.AssetRepository;
 import com.recognition.repository.PriceRepository;
+import com.recognition.service.MarketCacheService;
 import com.recognition.service.PriceService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class PriceServiceImpl implements PriceService {
     private final PriceRepository priceRepository;
     private final AssetRepository assetRepository;
     private final FinnhubClient finnhubClient;
+    private final MarketCacheService marketCacheService;
 
     @Override
     public Page<Price> getPriceHistory(UUID assetId, OffsetDateTime startDate,
@@ -170,14 +172,43 @@ public class PriceServiceImpl implements PriceService {
                 .build();
 
         Price saved = priceRepository.save(price);
-        return mapToDto(saved);
+        PriceDto dto = mapToDto(saved);
+
+        // Invalidate cache when new price is saved
+        if (marketCacheService.isEnabled()) {
+            marketCacheService.invalidatePrice(asset.getSymbol());
+            marketCacheService.invalidateCandles(asset.getSymbol());
+        }
+
+        return dto;
     }
 
     @Override
     public PriceDto getLatestPriceDto(UUID assetId) {
+        Asset asset = assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found"));
+
+        String symbol = asset.getSymbol();
+
+        // Check cache first
+        if (marketCacheService.isEnabled()) {
+            var cached = marketCacheService.getPrice(symbol);
+            if (cached.isPresent()) {
+                return cached.get();
+            }
+        }
+
+        // Cache miss - fetch from DB
         Price price = priceRepository.findTopByAssetIdOrderByTimestampDesc(assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Price not found"));
-        return mapToDto(price);
+        PriceDto dto = mapToDto(price);
+
+        // Store in cache for future requests
+        if (marketCacheService.isEnabled()) {
+            marketCacheService.setPrice(symbol, dto);
+        }
+
+        return dto;
     }
 
     @Override
@@ -235,6 +266,16 @@ public class PriceServiceImpl implements PriceService {
         Asset asset = assetRepository.findById(assetId)
                 .orElseThrow(() -> new NoSuchElementException("Asset not found"));
 
+        String symbol = asset.getSymbol();
+
+        // Check cache first
+        if (marketCacheService.isEnabled()) {
+            var cached = marketCacheService.getCandles(symbol, interval != null ? interval : "all");
+            if (cached.isPresent()) {
+                return cached.get();
+            }
+        }
+
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime start;
 
@@ -260,7 +301,7 @@ public class PriceServiceImpl implements PriceService {
                 ? prices.subList(prices.size() - limit, prices.size())
                 : prices;
 
-        return limited.stream()
+        List<CandleDTO> candles = limited.stream()
                 .map(p -> new CandleDTO(
                         p.getTimestamp(),
                         p.getPrice(), // open
@@ -270,6 +311,13 @@ public class PriceServiceImpl implements PriceService {
                         p.getVolume() != null ? p.getVolume().longValue() : null // convert BigDecimal -> Long
                 ))
                 .collect(Collectors.toList());
+
+        // Store in cache for future requests
+        if (marketCacheService.isEnabled()) {
+            marketCacheService.setCandles(symbol, interval, candles);
+        }
+
+        return candles;
     }
 
     @Override
@@ -368,6 +416,13 @@ public class PriceServiceImpl implements PriceService {
                         .build();
 
                 priceRepository.save(record);
+
+                // Invalidate cache for this symbol
+                if (marketCacheService.isEnabled()) {
+                    marketCacheService.invalidatePrice(asset.getSymbol());
+                    marketCacheService.invalidateCandles(asset.getSymbol());
+                }
+
                 updated++;
 
             } catch (Exception e) {

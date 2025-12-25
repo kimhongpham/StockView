@@ -77,10 +77,14 @@ Make sure Docker Desktop (Windows/macOS) or Docker Engine (Linux) is running bef
 
 ### 3️⃣ Run using start script (Windows/macOS/Linux)
 
-* **Windows:** double-click `start.bat`
+**Recommended method – just double-click!**
+
+* **Windows:** double-click `start-docker.bat` 
 * **Linux/macOS:** `./start.sh` (after `chmod +x start.sh`)
 
-The script will automatically run **backend + frontend + PostgreSQL** via Docker Compose.
+The script will automatically run **backend + PostgreSQL + Redis** via Docker Compose.
+
+> **Prerequisite:** Docker Desktop must be installed and running
 
 ---
 
